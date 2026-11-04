@@ -1,5 +1,4 @@
 import {esc} from './ui.js';
-import {L} from './i18n.js';
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const slim=p=>p&&{uid:p.uid,team:p.team};
 const blank=()=>({a:null,b:null,sa:null,sb:null,room:'',status:'pending',winner:null});

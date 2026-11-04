@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -32,13 +32,7 @@ body{background-image:radial-gradient(60rem 30rem at 50% -10%,rgba(6,182,212,.15
   </div>
 </header>
 <main id="app" class="mx-auto max-w-3xl pb-28"></main>
-<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink/80 backdrop-blur-md" style="padding-bottom:env(safe-area-inset-bottom)">
-  <div class="mx-auto grid max-w-3xl grid-cols-3">
-    <a href="#/" data-nav="" class="flex flex-col items-center gap-0.5 py-2 text-[11px] text-slate-400 transition"><i data-lucide="swords" class="h-5 w-5"></i>Feed</a>
-    <a href="#/new" data-nav="new" class="flex flex-col items-center gap-0.5 py-2 text-[11px] text-slate-400 transition"><i data-lucide="plus-circle" class="h-5 w-5"></i>Host</a>
-    <a href="#/me" data-nav="me" class="flex flex-col items-center gap-0.5 py-2 text-[11px] text-slate-400 transition"><i data-lucide="user-round" class="h-5 w-5"></i>Profile</a>
-  </div>
-</nav>
+<nav id="nav" class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink/80 backdrop-blur-md" style="padding-bottom:env(safe-area-inset-bottom)"></nav>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

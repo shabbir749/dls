@@ -211,7 +211,7 @@ function drawT(){
    ${canDelete?`<button data-act="delT" class="btn btn-d !py-1.5 !px-3 text-xs font-bold"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i>টুর্নামেন্ট ডিলিট করুন</button>`:`<span class="text-[11px] text-slate-400" title="কেউ জয়েন করলে ডিলিট করা যাবে না">🔒 ডিলিট লকড</span>`}</div>
    ${pend.length?`<div><div class="mb-2 text-xs font-bold text-slate-300">পেমেন্ট যাচাই করুন (${pend.length})</div><div class="space-y-2.5">${pend.map(p=>`<div class="rounded-xl bg-slate-900/60 p-3.5 text-sm"><div class="flex items-center justify-between gap-2"><strong class="text-slate-100">${esc(p.team)}</strong><span class="text-xs text-slate-300 font-medium">${esc(p.method)} · ${esc(p.sender)}</span></div><div class="mt-1.5 text-xs text-slate-300">TrxID: <b class="select-all text-slate-100 font-bold">${esc(p.trx)}</b></div><div class="mt-3 grid grid-cols-2 gap-2"><button data-act="verify" data-u="${p.uid}" class="btn btn-n !py-2">পেমেন্ট পেয়েছি (Verify)</button><button data-act="reject" data-u="${p.uid}" class="btn btn-d !py-2">বাতিল করুন</button></div></div>`).join('')}</div><p class="mt-2 text-xs text-slate-400 leading-relaxed">ভেরিফাই করার আগে আপনার বিকাশ/নগদ অ্যাপে ট্রানজেকশন আইডি (TrxID) মিলিয়ে নিন।</p></div>`:''}
    ${t.status==='open'?`<button data-act="start" class="btn btn-p w-full py-3 text-base font-bold" ${n<2?'disabled':''}>ব্র্যাকেট তৈরি করে শুরু করুন (${n}টি টিম)</button>`:''}
-   ${review.length?`<div class="space-y-2"><div class="text-xs font-bold text-slate-300">আপনার যাচাই প্রয়োজন</div>${review.map(x=>`<a href="#/m/${t.id}/${x.r}/${x.i}" class="flex items-center justify-between rounded-xl bg-slate-900/60 p-3 text-sm hover:bg-white/[0.05]"><span>${esc(x.m.a.team)} vs ${esc(x.m.b.team)}</span><span class="badge ${x.m.status==='disputed'?'bg-red-500/20 text-red-300':'bg-gold/20 text-gold'}">${x.m.status}</span></a>`).join('')}</div>`:(t.status==='live'?`<p class="text-sm text-slate-300">যাচাই করার মতো কোনো ম্যাচ রেজাল্ট নেই।</p>`:'')}</section>`:''}
+   ${review.length?`<div class="space-y-2"><div class="text-xs font-bold text-slate-300">আপনার যাচাই প্রয়োজন</div>${review.map(x=>`<a href="#/m/${t.id}/${x.r}/${x.i}" class="flex items-center justify-between rounded-xl bg-slate-900/60 p-3 text-sm hover:bg-white/[0.05]"><span>${esc(x.m.a.team)} vs ${esc(x.m.b.team)}</span><span class="badge ${x.m.status==='disputed'?'bg-red-500/20 text-red-300':x.m.status==='confirmed'?'bg-neon/20 text-neon':'bg-gold/20 text-gold'}">${x.m.status}</span></a>`).join('')}</div>`:(t.status==='live'?`<p class="text-sm text-slate-300">যাচাই করার মতো কোনো ম্যাচ রেজাল্ট নেই।</p>`:'')}</section>`:''}
   ${t.status==='done'&&payPlaces.length?`<section><h2 class="mb-1 text-lg font-bold text-slate-100">পুরস্কার প্রদান স্ট্যাটাস</h2><p class="mb-3 text-xs text-slate-300 leading-relaxed">ফাইনাল খেলার ২৪ ঘণ্টার মধ্যে হোস্ট প্রাইজমানি পাঠিয়ে এখানে ট্রানজেকশন আইডি দেবেন।</p><div class="space-y-2.5">${payPlaces.map(payRow).join('')}</div></section>`:''}
   ${t.rounds&&Object.keys(t.rounds).length?`<section><h2 class="mb-3 text-lg font-bold text-slate-100">টুর্নামেন্ট ব্র্যাকেট (ফিক্সচার)</h2>${renderBracket(t,user?.uid)}</section>`:''}
   <section><h2 class="mb-3 text-lg font-bold text-slate-100">দলসমূহ (${t.players.length}/${t.max})</h2><div class="grid gap-2.5 sm:grid-cols-2">${t.players.map((p,i)=>`<div class="glass flex items-center gap-3 rounded-xl p-3 text-sm"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10 text-xs font-bold text-slate-200">${i+1}</span><span class="flex-1 truncate font-semibold text-slate-100">${esc(p.team)}</span>${isPaid(p)?'':`<span class="badge bg-gold/15 text-gold">অপেক্ষমাণ</span>`}</div>`).join('')||`<p class="text-sm text-slate-300">এখানে এখনো কোনো তথ্য নেই।</p>`}</div></section>
@@ -382,15 +382,20 @@ function shrink(file,max=900){return new Promise((res,rej)=>{const im=new Image(
 
 async function checkHostSubscription(uid) {
   try {
-    const q = F.query(F.collection(db, 'subscriptions'), F.where('uid', '==', uid), F.where('status', '==', 'approved'));
+    const q = F.query(F.collection(db, 'subscriptions'), F.where('uid', '==', uid));
     const snap = await F.getDocs(q);
     if (snap.empty) return false;
     let valid = false;
     snap.docs.forEach(d => {
       const data = d.data();
-      if (data.targetExpire) {
-        const exp = new Date(data.targetExpire).getTime();
-        if (exp > Date.now()) valid = true;
+      const st = String(data.status || '').toLowerCase().trim();
+      if (st === 'approved') {
+        if (data.targetExpire) {
+          const exp = new Date(data.targetExpire).getTime();
+          if (exp > Date.now()) valid = true;
+        } else {
+          valid = true;
+        }
       }
     });
     return valid;
@@ -403,7 +408,6 @@ async function createView(){
   if(!user){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">টুর্নামেন্ট হোস্ট করতে প্রথমে সাইন ইন করুন।</p><button data-act="auth" class="btn btn-p">প্রবেশ করুন</button></div>`);return}
   if(!complete(profile)){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">হোস্ট করার আগে আপনার প্রোফাইল সম্পূর্ণ করে নিন।</p><a href="#/me" class="btn btn-p">প্রোফাইল পেজে যান</a></div>`);return}
 
-  // Automatic Subscription Expiry checking from subscriptions collection
   const isSubActive = await checkHostSubscription(user.uid);
 
   if (!isSubActive) {
@@ -451,7 +455,6 @@ async function createView(){
         btn.disabled = true;
         btn.textContent = 'পাঠানো হচ্ছে...';
         
-        // Auto Calculate Expiry Date according to Selected Pack
         const now = new Date();
         if(type === '15days') now.setDate(now.getDate() + 15);
         else if(type === '1month') now.setMonth(now.getMonth() + 1);

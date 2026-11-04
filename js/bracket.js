@@ -1,8 +1,9 @@
 import {esc} from './ui.js';
+import {L} from './i18n.js';
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const slim=p=>p&&{uid:p.uid,team:p.team};
 const blank=()=>({a:null,b:null,sa:null,sb:null,room:'',status:'pending',winner:null});
-export const roundName=(n,total)=>n===1?'Final':n===2?'Semifinals':n===4?'Quarterfinals':`Round of ${n*2}`;
+export const roundName=n=>n===1?L('Final'):n===2?L('Semifinals'):n===4?L('Quarterfinals'):L('Round of {0}',n*2);
 
 /** Single elimination. Size = next power of two ≥ players, so no match is ever bye-vs-bye. */
 export function build(players){
@@ -19,7 +20,7 @@ export function advance(rounds,r,i,w){
 export function renderBracket(T,uid){
   const keys=Object.keys(T.rounds||{}).sort((a,b)=>a.slice(1)-b.slice(1));
   if(!keys.length)return '';
-  const who=(p,sc,win)=>`<div class="flex items-center justify-between gap-2 px-2.5 py-1.5 ${win?'bg-neon/15 font-bold text-neon':''}"><span class="truncate ${p?'':'text-slate-500'}">${p?esc(p.team):'TBD'}</span><b>${sc??''}</b></div>`;
+  const who=(p,sc,win)=>`<div class="flex items-center justify-between gap-2 px-2.5 py-1.5 ${win?'bg-neon/15 font-bold text-neon':''}"><span class="truncate ${p?'':'text-slate-500'}">${p?esc(p.team):L('TBD')}</span><b>${sc??''}</b></div>`;
   return `<div class="-mx-4 overflow-x-auto px-4 pb-2"><div class="flex min-w-max gap-8">${keys.map((k,r)=>{
     const ms=T.rounds[k];
     return `<div class="flex flex-col"><div class="mb-2 text-center text-[11px] font-bold uppercase tracking-wider text-volt">${roundName(ms.length)}</div>
@@ -27,5 +28,5 @@ export function renderBracket(T,uid){
       const mine=uid&&(m.a?.uid===uid||m.b?.uid===uid),ready=m.a&&m.b&&m.status!=='done';
       return `<a href="#/m/${T.id}/${r}/${i}" class="block w-44 overflow-hidden rounded-xl border text-xs transition active:scale-95 ${mine?'border-volt shadow-lg shadow-volt/20':'border-white/10'} bg-slate-800/70 backdrop-blur-md">
         ${who(m.a,m.sa,m.winner&&m.winner===m.a?.uid)}<div class="h-px bg-white/10"></div>${who(m.b,m.sb,m.winner&&m.winner===m.b?.uid)}
-        ${m.status==='disputed'?'<div class="bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-300">DISPUTED</div>':ready&&m.status!=='pending'?'<div class="bg-gold/20 px-2 py-0.5 text-[10px] font-bold text-gold">'+m.status.toUpperCase()+'</div>':''}</a>`}).join('')}</div></div>`}).join('')}</div></div>`;
+        ${m.status==='disputed'?'<div class="bg-red-500/20 px-2 py-0.5 text-[10px] font-bold uppercase text-red-300">'+L('disputed')+'</div>':ready&&m.status!=='pending'?'<div class="bg-gold/20 px-2 py-0.5 text-[10px] font-bold uppercase text-gold">'+L(m.status)+'</div>':''}</a>`}).join('')}</div></div>`}).join('')}</div></div>`;
 }

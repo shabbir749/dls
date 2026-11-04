@@ -292,7 +292,7 @@ const actions={
   },
   async logout(){await F.signOut(auth);location.hash='#/'}
 };
-document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a&&actions[a.dataset.act]){e.preventDefault();actions[a.dataset.act](a.dataset,e)}});
+document.addEventListener('click',async e=>{const a=e.target.closest('[data-act]');if(a&&actions[a.dataset.act]){e.preventDefault();actions[a.dataset.act](a.dataset,e)}});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;drawList()}});
 
 function hostView(id){
@@ -384,7 +384,6 @@ function createView(){
   if(!user){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">টুর্নামেন্ট হোস্ট করতে প্রথমে সাইন ইন করুন।</p><button data-act="auth" class="btn btn-p">প্রবেশ করুন</button></div>`);return}
   if(!complete(profile)){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">হোস্ট করার আগে আপনার প্রোফাইল সম্পূর্ণ করে নিন।</p><a href="#/me" class="btn btn-p">প্রোফাইল পেজে যান</a></div>`);return}
 
-  // Check host subscription validity (Manual approval via Firestore)
   const subExp = profile.subExpire ? new Date(profile.subExpire).getTime() : 0;
   const isSubActive = subExp > Date.now();
 
@@ -393,36 +392,66 @@ function createView(){
       <div class="glass rounded-3xl p-6 text-center space-y-4">
         <div class="grid h-16 w-16 place-items-center rounded-2xl bg-gold/15 text-gold mx-auto"><i data-lucide="crown" class="h-8 w-8"></i></div>
         <h1 class="text-2xl font-black text-slate-100">হস্টিং সাবস্ক্রিপশন প্রয়োজন</h1>
-        <p class="text-sm text-slate-300 leading-relaxed">টুর্নামেন্ট হোস্ট করতে হলে আপনাকে যেকোনো একটি সাবস্ক্রিপশন প্যাকেজ নিতে হবে। নিচে দেওয়া অফিশিয়াল নম্বরে টাকা পাঠিয়ে আপনার ইউজার আইডি ও TrxID সহ আমাদের হোয়াটসঅ্যাপে যোগাযোগ করুন। Admin ম্যানুয়ালি চেক করে আপনার অ্যাকাউন্ট এপ্রুভ করে দেবেন।</p>
+        <p class="text-sm text-slate-300 leading-relaxed">টুর্নামেন্ট হোস্ট করতে হলে যেকোনো একটি প্যাকেজ বেছে নিন এবং পেমেন্ট করে নিচে ট্রানজেকশন আইডি (TrxID) দিন। অ্যাডমিন যাচাই করার পর আপনার হস্টিং এক্টিভ হয়ে যাবে।</p>
         
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left pt-2">
           <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
             <div class="text-xs text-slate-400 font-bold">১৫ দিন</div>
             <div class="text-xl font-black text-volt mt-1">১০০ টাকা</div>
-            <p class="text-xs text-slate-400 mt-2">সীমিত টুর্নামেন্ট</p>
           </div>
           <div class="rounded-2xl border border-volt/40 bg-volt/5 p-4 relative">
             <span class="absolute -top-2.5 right-3 badge bg-volt text-ink font-bold text-[10px]">জনপ্রিয়</span>
             <div class="text-xs text-volt font-bold">১ মাস</div>
             <div class="text-xl font-black text-slate-100 mt-1">১৫০ টাকা</div>
-            <p class="text-xs text-slate-300 mt-2">পুরো মাসের সুবিধা</p>
           </div>
           <div class="rounded-2xl border border-gold/40 bg-gold/5 p-4">
             <div class="text-xs text-gold font-bold">৬ মাস</div>
             <div class="text-xl font-black text-gold mt-1">৫০০ টাকা</div>
-            <p class="text-xs text-slate-300 mt-2">দীর্ঘমেয়াদী সাশ্রয়ী</p>
           </div>
         </div>
 
-        <div class="rounded-2xl bg-slate-900/80 p-4 text-left space-y-2 text-sm">
-          <b class="text-gold font-bold block">পেমেন্ট করার মাধ্যম:</b>
-          <p class="text-slate-200">বিকাশ/নগদ (Personal): <b class="select-all text-volt">01XXXXXXXXX</b></p>
-          <p class="text-xs text-slate-400 leading-relaxed">টাকা পাঠানোর পর ট্রানজেকশন আইডি (TrxID) এবং আপনার প্রোফাইল ইমেইলটি আমাদের অ্যাডমিনকে জানান। অ্যাডমিন ভেরিফাই করার পর আপনার হস্টিং এক্টিভ হয়ে যাবে।</p>
+        <div class="rounded-2xl bg-slate-900/80 p-4 text-left space-y-3 text-sm">
+          <b class="text-gold font-bold block">পেমেন্ট করার মাধ্যম (Personal):</b>
+          <p class="text-slate-200">বিকাশ / নগদ: <b class="select-all text-volt">01XXXXXXXXX</b></p>
+          <hr class="border-white/10 my-2">
+          <div><label class="lbl">প্যাকেজ সিলেক্ট করুন</label><select id="subType" class="inp text-slate-100"><option value="15days">১৫ দিন - ১০০ টাকা</option><option value="1month" selected>১ মাস - ১৫০ টাকা</option><option value="6months">৬ মাস - ৫০০ টাকা</option></select></div>
+          <div><label class="lbl">যে নম্বর থেকে টাকা পাঠিয়েছেন</label><input id="subSender" class="inp" type="tel" placeholder="01XXXXXXXXX"></div>
+          <div><label class="lbl">ট্রানজেকশন আইডি (TrxID)</label><input id="subTrx" class="inp" placeholder="যেমন: 9A7B3C2D"></div>
+          <button id="subReqBtn" class="btn btn-n w-full py-3 font-bold mt-2">অনুরোধ পাঠান</button>
         </div>
-
-        <a href="#/me" class="btn btn-p w-full py-3 font-bold block text-center">প্রোফাইল পেজে ফিরে যান</a>
       </div>
     </div>`);
+    
+    setTimeout(()=>{
+      const btn = $('#subReqBtn');
+      if(btn) btn.onclick = async()=>{
+        const type = $('#subType').value;
+        const sender = $('#subSender').value.trim();
+        const trx = $('#subTrx').value.trim();
+        if(!sender || trx.length < 5) return toast('আপনার ফোন নম্বর ও সঠিক TrxID লিখুন','err');
+        btn.disabled = true;
+        btn.textContent = 'পাঠানো হচ্ছে...';
+        try {
+          await F.addDoc(F.collection(db, 'subscriptions'), {
+            uid: user.uid,
+            team: profile.team,
+            email: user.email || '',
+            phone: profile.phone,
+            type,
+            sender,
+            trx,
+            status: 'pending',
+            createdAt: F.serverTimestamp()
+          });
+          toast('সাবস্ক্রিপশন অনুরোধ সফলভাবে পাঠানো হয়েছে!');
+          setTimeout(()=>location.reload(), 1500);
+        } catch(e) {
+          toast(e.message, 'err');
+          btn.disabled = false;
+          btn.textContent = 'অনুরোধ পাঠান';
+        }
+      };
+    }, 100);
     return;
   }
 
@@ -480,7 +509,7 @@ function profileView(){
 
   $('#pf').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
     d.avatar=$('#avatarVal').value;
-    try{await F.setDoc(F.doc(db,'users',user.uid),d,{merge:true});profile={...profile,...d};header();toast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে!');location.hash='#/'}catch(err){toast(err.message,'err')}};
+    try{await F.setDoc(F.doc(db,'users',user.uid),d,{merge:true});profile={...profile,...d};header();toast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে!');location.hash='#/t'}catch(err){toast(err.message,'err')}};
   
   F.getDocs(F.collection(db,'tournaments')).then(s=>{
     const ts=s.docs.map(d=>({id:d.id,...d.data()})),hosted=ts.filter(t=>t.hostId===user.uid),joined=ts.filter(t=>(t.players||[]).some(x=>x.uid===user.uid));

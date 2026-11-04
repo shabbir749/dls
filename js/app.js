@@ -63,7 +63,7 @@ function header(){
 }
 function nav(){
   const it=[['','home','হোম','#/'],['new','plus-circle','হোস্ট','#/new'],['lb','crown','র‌্যাঙ্কিং','#/lb'],['me','user-round','প্রোফাইল','#/me']];
-  $('#nav').innerHTML=`<div class="mx-auto grid max-w-3xl grid-cols-4">${it.map(([k,i,l,h])=>`<a href="${h}" data-nav="${k}" class="flex flex-col items-center gap-1 py-2 text-xs font-medium text-slate-300 transition"><i data-lucide="${i}" class="h-5 w-5"></i>${l}</a>`).join('')}</div>`;
+  $('#nav').innerHTML=`<div class="mx-auto grid max-w-3xl grid-cols-4">${it.map(([k,i,l,h])=>`<a href="${h}" data-nav="${k}" class="flex flex-col items-center gap-1 py-2 text-xs font-medium text-slate-300 transition ${k==='new'?'text-volt font-bold':''}"><i data-lucide="${i}" class="h-5 w-5"></i>${l}</a>`).join('')}</div>`;
   icons();
 }
 function authModal(){
@@ -380,19 +380,38 @@ function shrink(file,max=900){return new Promise((res,rej)=>{const im=new Image(
   im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.6))};
   im.onerror=()=>rej(Error('ছবিটি পড়া সম্ভব হয়নি, অন্য ছবি দিন'));im.src=u})}
 
-function createView(){
+async function checkHostSubscription(uid) {
+  try {
+    const q = F.query(F.collection(db, 'subscriptions'), F.where('uid', '==', uid), F.where('status', '==', 'approved'));
+    const snap = await F.getDocs(q);
+    if (snap.empty) return false;
+    let valid = false;
+    snap.docs.forEach(d => {
+      const data = d.data();
+      if (data.targetExpire) {
+        const exp = new Date(data.targetExpire).getTime();
+        if (exp > Date.now()) valid = true;
+      }
+    });
+    return valid;
+  } catch(e) {
+    return false;
+  }
+}
+
+async function createView(){
   if(!user){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">টুর্নামেন্ট হোস্ট করতে প্রথমে সাইন ইন করুন।</p><button data-act="auth" class="btn btn-p">প্রবেশ করুন</button></div>`);return}
   if(!complete(profile)){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">হোস্ট করার আগে আপনার প্রোফাইল সম্পূর্ণ করে নিন।</p><a href="#/me" class="btn btn-p">প্রোফাইল পেজে যান</a></div>`);return}
 
-  const subExp = profile.subExpire ? new Date(profile.subExpire).getTime() : 0;
-  const isSubActive = subExp > Date.now();
+  // Automatic Subscription Expiry checking from subscriptions collection
+  const isSubActive = await checkHostSubscription(user.uid);
 
   if (!isSubActive) {
     setView(`<div class="space-y-4 p-4 max-w-xl mx-auto">
       <div class="glass rounded-3xl p-6 text-center space-y-4">
         <div class="grid h-16 w-16 place-items-center rounded-2xl bg-gold/15 text-gold mx-auto"><i data-lucide="crown" class="h-8 w-8"></i></div>
         <h1 class="text-2xl font-black text-slate-100">হস্টিং সাবস্ক্রিপশন প্রয়োজন</h1>
-        <p class="text-sm text-slate-300 leading-relaxed">টুর্নামেন্ট হোস্ট করতে হলে যেকোনো একটি প্যাকেজ বেছে নিন এবং পেমেন্ট করে নিচে ট্রানজেকশন আইডি (TrxID) দিন। অ্যাডমিন যাচাই করার পর আপনার হস্টিং এক্টিভ হয়ে যাবে।</p>
+        <p class="text-sm text-slate-300 leading-relaxed">টুর্নামেন্ট হোস্ট করতে হলে যেকোনো একটি প্যাকেজ বেছে নিন এবং পেমেন্ট করে নিচে ট্রানজেকশন আইডি (TrxID) দিন। অ্যাডমিন যাচাই করে এপ্রুভ করলেই আপনার হস্টিং অ্যাক্টিভ হয়ে যাবে।</p>
         
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left pt-2">
           <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
@@ -431,6 +450,14 @@ function createView(){
         if(!sender || trx.length < 5) return toast('আপনার ফোন নম্বর ও সঠিক TrxID লিখুন','err');
         btn.disabled = true;
         btn.textContent = 'পাঠানো হচ্ছে...';
+        
+        // Auto Calculate Expiry Date according to Selected Pack
+        const now = new Date();
+        if(type === '15days') now.setDate(now.getDate() + 15);
+        else if(type === '1month') now.setMonth(now.getMonth() + 1);
+        else if(type === '6months') now.setMonth(now.getMonth() + 6);
+        const targetExpire = now.toISOString();
+
         try {
           await F.addDoc(F.collection(db, 'subscriptions'), {
             uid: user.uid,
@@ -440,10 +467,11 @@ function createView(){
             type,
             sender,
             trx,
+            targetExpire,
             status: 'pending',
             createdAt: F.serverTimestamp()
           });
-          toast('সাবস্ক্রিপশন অনুরোধ সফলভাবে পাঠানো হয়েছে!');
+          toast('অনুরোধ পাঠানো হয়েছে! অ্যাডমিন এপ্রুভ করলে হোস্ট করতে পারবেন।');
           setTimeout(()=>location.reload(), 1500);
         } catch(e) {
           toast(e.message, 'err');
@@ -509,7 +537,7 @@ function profileView(){
 
   $('#pf').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
     d.avatar=$('#avatarVal').value;
-    try{await F.setDoc(F.doc(db,'users',user.uid),d,{merge:true});profile={...profile,...d};header();toast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে!');location.hash='#/t'}catch(err){toast(err.message,'err')}};
+    try{await F.setDoc(F.doc(db,'users',user.uid),d,{merge:true});profile={...profile,...d};header();toast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে!');location.hash='#/'}catch(err){toast(err.message,'err')}};
   
   F.getDocs(F.collection(db,'tournaments')).then(s=>{
     const ts=s.docs.map(d=>({id:d.id,...d.data()})),hosted=ts.filter(t=>t.hostId===user.uid),joined=ts.filter(t=>(t.players||[]).some(x=>x.uid===user.uid));

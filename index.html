@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<link rel="manifest" href="manifest.json">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DLS Tournament Hub</title>
+<meta name="description" content="Join, host and win Dream League Soccer tournaments with verified payments and fair play.">
 <meta name="theme-color" content="#0A0F1F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="launchericon-192x192.png">
+<link rel="apple-touch-icon" href="launchericon-192x192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DLS Hub">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -58,5 +64,10 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #22
 <main id="app" class="mx-auto max-w-3xl pb-28"></main>
 <nav id="nav" class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink/95 backdrop-blur-md" style="padding-bottom:env(safe-area-inset-bottom)"></nav>
 <script type="module" src="js/app.js"></script>
+<script>
+if('serviceWorker' in navigator){
+  addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+}
+</script>
 </body>
 </html>

@@ -7,12 +7,12 @@
   "theme_color": "#0f172a",
   "icons": [
     {
-      "src": "images/192 dls.jpg",
+      "src": "https://github.com/shabbir749/dls/blob/main/images/192%20dls.jpg",
       "sizes": "192x192",
       "type": "image/jpg"
     },
     {
-      "src": "images/512 dls.jpg",
+      "src": "https://github.com/shabbir749/dls/blob/main/images/512%20dls.jpg",
       "sizes": "512x512",
       "type": "image/jpg"
     }

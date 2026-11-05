@@ -1,7 +1,7 @@
 {
   "name": "DLS Tournament Hub",
   "short_name": "DLS Hub",
-  "start_url": "/",
+  "start_url": "https://dls.shaor.workers.dev/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",

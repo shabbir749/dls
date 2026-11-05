@@ -1,6 +1,6 @@
 // Install-app banner (standalone: no imports needed). Shows until the app is installed or dismissed.
 // After you build the Android APK, paste its direct link here (GitHub Releases link works):
-const APK_URL='';   // e.g. 'https://github.com/shabbir749/dls/releases/download/v1/dls-hub.apk'
+const APK_URL='https://github.com/shabbir749/dls/releases/download/app/DLS.Tournament.Hub.apk';   // e.g. 'https://github.com/shabbir749/dls/releases/download/v1/dls-hub.apk'
 
 const T={
   bn:{title:'DLS Hub অ্যাপ ইনস্টল করুন',sub:'হোম স্ক্রিন থেকে এক ট্যাপে খুলুন',install:'ইনস্টল',apk:'APK ডাউনলোড',ios:'iPhone-এ ইনস্টল করতে Safari-তে নিচের Share বাটন চাপুন, তারপর "Add to Home Screen" চাপুন।'},

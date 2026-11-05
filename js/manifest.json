@@ -5,11 +5,12 @@
   "name": "DLS Tournament Hub",
   "orientation": "any",
   "scope": "/",
-  "short_name": "DLS Hub",
+  "short_name": "DLS HUB",
   "start_url": "/",
   "theme_color": "#0f172a",
   "lang": "bn",
   "categories": [
+    "events",
     "games",
     "sports"
   ]

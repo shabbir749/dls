@@ -1,0 +1,16 @@
+{
+  "background_color": "#0f172a",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "DLS Tournament Hub",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "DLS Hub",
+  "start_url": "/",
+  "theme_color": "#0f172a",
+  "lang": "bn",
+  "categories": [
+    "games",
+    "sports"
+  ]
+}

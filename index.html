@@ -64,6 +64,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #22
 <main id="app" class="mx-auto max-w-3xl pb-28"></main>
 <nav id="nav" class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink/95 backdrop-blur-md" style="padding-bottom:env(safe-area-inset-bottom)"></nav>
 <script type="module" src="js/app.js"></script>
+<script type="module" src="js/install.js"></script>
 <script>
 if('serviceWorker' in navigator){
   addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});

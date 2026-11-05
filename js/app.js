@@ -5,15 +5,15 @@ import {build,advance,renderBracket} from './bracket.js';
 const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,CUR=null,HS={},S={tab:'open',list:[],q:''};
 
-const PLEDGE=['আমি কোনো ম্যাচ ফিক্সিং, বিক্রি বা ইচ্ছাকৃত হারব না।','কোনো মোড, চিট বা ভেক অ্যাকাউন্ট ব্যবহার করব না।','আমি জানি যেকোনো রেজাল্টে অপোনেন্টের কনফার্মেশন লাগবে এবং ফিক্সিং প্রমাণিত হলে হোস্ট ডিসকোয়ালিফাই করতে পারবে।','আমি প্রাইজপুল ও ম্যানেজমেন্ট ফি নিয়ম ভালো করে পড়েছি।'];
+const PLEDGE=['আমি কোনো ম্যাচ ফিক্সিং, বিক্রি বা ইচ্ছাকৃত হারব না।','কোনো মোড, চিট বা ফেক অ্যাকাউন্ট ব্যবহার করব না।','আমি জানি যেকোনো রেজাল্টে অপোনেন্টের কনফার্মেশন লাগবে এবং ফিক্সিং প্রমাণিত হলে হোস্ট ডিসকোয়ালিফাই করতে পারবে।','আমি টুর্নামেন্ট ও প্রাইজের নিয়ম ভালো করে পড়েছি।'];
 const PAYPLEDGE='আমি সত্যিসত্যি এন্ট্রি ফি পাঠিয়েছি এবং যে ট্রানজেকশন আইডি (TrxID) দিয়েছি তা সঠিক।';
 const STEPS=[['user-round','প্রোফাইল তৈরি করুন','আপনার টিম নাম, ছবি এবং হোয়াটসঅ্যাপ নম্বর দিন। এক মিনিটও লাগবে না।'],['wallet','জয়েন করুন ও ফি দিন','হোস্টকে এন্ট্রি ফি পাঠিয়ে ট্রানজেকশন আইডি (TrxID) দিন। হোস্ট এটি যাচাই করবে।'],['gamepad-2','ম্যাচ খেলুন ও কনফার্ম করুন','রুম কোড শেয়ার করুন, ম্যাচ খেলুন, স্ক্রিনশট দিন। অপোনেন্ট স্কোর কনফার্ম করবে।'],['trophy','পুরস্কার বুঝে নিন','হোস্ট প্রাইজমানি দিয়ে TrxID দেবেন। বিজয়ী দল টাকা পাওয়ার কথা কনফার্ম করবে।']];
-const SAFE=['টাকা পাঠানোর আগে হোস্টের ট্র্যাক রেকর্ড বা পূর্বের ইতিহাস যাচাই করুন।','শুধুমাত্র টুর্নামেন্ট পেজে দেওয়া অফিশিয়াল নম্বরে টাকা পাঠান।','অপরিচিত কোনো লিংক বা ইনবক্সে মেসেজ দেওয়া ব্যক্তির কথায় টাকা পাঠাবেন না।','যে হোস্ট পুরস্কার দেয় না তাকে রিপোর্ট করুন। তার প্রোফাইলে সবার সামনে অভিযোগ জমা হবে।'];
-const FAQ=[['আমার পেমেন্ট এখনো ভেরিফাই হয়নি, এখন কী করব?','হোস্ট ম্যানুয়ালি প্রতিটি TrxID চেক করেন। দেরি হলে হোস্টকে হোয়াটসঅ্যাপে মেসেজ দিন। আপনার স্লট পেন্ডিং থাকবে।'],['হোস্ট যদি পুরস্কারের টাকা না দেয়?','বিজয়ী দল "টাকা পাইনি" সিলেক্ট করবে এবং তা হোস্টের প্রোফাইলে সবার জন্য প্রদর্শিত হবে। তাই বিশ্বস্ত হোস্টের টুর্নামেন্টে খেলুন।'],['আমার রুম কোডের মেয়াদ শেষ হয়ে গেছে, কী করব?','ডিএলএস ফ্রেন্ডলি রুম কোডের মেয়াদ ৫ মিনিট থাকে। নতুন রুম খুলে ফ্রেশ কোড ম্যাচ রুমে সেভ করুন।'],['সাইট কি কোনো ফি কেটে রাখে?','এই সাইট নিজে কোনো টাকা ধরে রাখে না। হোস্ট নিজেই এন্ট্রি ফি সংগ্রহ করেন এবং ম্যানেজমেন্ট ফি নির্ধারণ করেন।']];
+const SAFE=['টাকা পাঠানোর আগে হোস্টের ট্র্যাক রেকর্ড বা পূর্বের ইতিহাস যাচাই করুন।','শুধুমাত্র টুর্নামেন্ট পেজে দেওয়া অফিশিয়াল নম্বরে টাকা পাঠান।','অপরিচিত কোনো লিংক বা ইনবক্সে মেসেজ দেওয়া ব্যক্তির কথায় টাকা পাঠাবেন না।','যে হোস্ট পুরস্কার দেয় না তাকে রিপোর্ট করুন।'];
+const FAQ=[['আমার পেমেন্ট এখনো ভেরিফাই হয়নি, এখন কী করব?','হোস্ট ম্যানুয়ালি প্রতিটি TrxID চেক করেন। দেরি হলে হোস্টকে হোয়াটসঅ্যাপে মেসেজ দিন। আপনার স্লট পেন্ডিং থাকবে।'],['হোস্ট যদি পুরস্কারের টাকা না দেয়?','বিজয়ী দল "টাকা পাইনি" সিলেক্ট করবে এবং তা প্ল্যাটফর্মে রিপোর্ট হিসেবে জমা হবে।'],['আমার রুম কোডের মেয়াদ শেষ হয়ে গেছে, কী করব?','ডিএলএস ফ্রেন্ডলি রুম কোডের মেয়াদ ৫ মিনিট থাকে। নতুন রুম খুলে ফ্রেশ কোড ম্যাচ রুমে সেভ করুন।'],['সাইট কি কোনো কমিশন বা ফি কেটে রাখে?','না, প্ল্যাটফর্ম ওনার কোনো ফি কাটে না। হোস্ট সাবস্ক্রিপশন কিনে স্বাধীনভাবে নিজের ফি ম্যানেজ করতে পারেন।']];
 
 const tref=id=>F.doc(db,'tournaments',id);
 const prizeTotal=t=>(t.prizes||[]).reduce((a,b)=>a+(+b||0),0);
-const complete=p=>p&&p.team&&p.phone;
+const complete=p=>p&&p.team&&p.phone&&p.avatar;
 const isPaid=p=>p.paid!==false;
 const paidN=t=>(t.players||[]).filter(isPaid).length;
 const statusBadge=s=>({open:['আসন্ন','bg-volt/15 text-volt'],live:['লাইভ','bg-neon/15 text-neon'],done:['সম্পন্ন','bg-gold/15 text-gold']}[s]||['?','']);
@@ -89,8 +89,10 @@ function route(){
   if(p==='t')return tourney(a);
   if(p==='m')return matchView(a,+b,+c);
   if(p==='h')return hostView(a);
+  if(p==='u')return publicProfileView(a);
   if(p==='new')return createView();
   if(p==='me')return profileView();
+  if(p==='admin')return adminReportsView();
   if(p==='lb')return listen(drawLb);
   listen(drawFeed);
 }
@@ -153,24 +155,12 @@ function drawLb(){
   const rows=Object.values(m).sort((a,b)=>b.c-a.c||b.w-a.w||b.prize-a.prize).slice(0,30);
   setView(`<div class="space-y-4 p-4"><div><h1 class="text-2xl font-black">র‌্যাঙ্কিং</h1><p class="text-sm text-slate-300 mt-1">চ্যাম্পিয়নশিপ এবং ম্যাচ জয়ের ওপর ভিত্তি করে সেরা দলগুলোর তালিকা।</p></div>
   ${rows.length?`<div class="glass overflow-hidden rounded-2xl"><div class="grid grid-cols-[2rem_1fr_3rem_3rem_5rem] gap-2 border-b border-white/10 px-3 py-3 text-xs font-bold uppercase text-slate-400"><span>#</span><span>টিম</span><span class="text-center">🏆</span><span class="text-center">জয়</span><span class="text-right">অর্জিত পুরস্কার</span></div>
-  ${rows.map((r,i)=>`<div class="grid grid-cols-[2rem_1fr_3rem_3rem_5rem] items-center gap-2 px-3 py-3 text-sm ${i%2?'bg-white/[.03]':''}"><span class="font-bold ${i<3?'text-gold':'text-slate-400'}">${i+1}</span><span class="truncate font-semibold text-slate-100">${esc(r.team)}</span><span class="text-center font-bold text-gold">${r.c}</span><span class="text-center font-medium">${r.w}</span><span class="text-right font-bold text-xs text-neon">${money(r.prize)}</span></div>`).join('')}</div>`
+  ${rows.map((r,i)=>`<div class="grid grid-cols-[2rem_1fr_3rem_3rem_5rem] items-center gap-2 px-3 py-3 text-sm ${i%2?'bg-white/[.03]':''}"><span class="font-bold ${i<3?'text-gold':'text-slate-400'}">${i+1}</span><a href="#/u/${r.uid}" class="truncate font-semibold text-slate-100 hover:text-volt">${esc(r.team)}</a><span class="text-center font-bold text-gold">${r.c}</span><span class="text-center font-medium">${r.w}</span><span class="text-right font-bold text-xs text-neon">${money(r.prize)}</span></div>`).join('')}</div>`
   :`<div class="glass rounded-2xl p-8 text-center text-sm text-slate-300"><i data-lucide="crown" class="mx-auto mb-2 h-8 w-8 text-slate-400"></i>এখনো কোনো র‍্যাঙ্কিং নেই। টুর্নামেন্ট শেষ হলে এখানে দেখতে পাবেন।</div>`}</div>`);
 }
 
 function tourney(id){
   unsub=F.onSnapshot(tref(id),s=>{if(!s.exists())return setView(`<p class="p-8 text-center text-slate-300">টুর্নামেন্ট পাওয়া যায়নি</p>`);T={id,...s.data()};T.players=T.players||[];drawT()},e=>toast(e.message,'err'));
-}
-function transparency(t){
-  const n=paidN(t),col=t.fee*n,fee=Math.round(col*t.feePct/100),net=col-fee,pt=prizeTotal(t);
-  return `<section class="rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/10 to-transparent p-4 sm:p-5 backdrop-blur-md">
-  <div class="mb-3 flex items-center gap-2 font-bold text-gold text-base"><i data-lucide="shield-check" class="h-5 w-5"></i>প্রাইজপুল ও ম্যানেজমেন্ট ফি বিবরণ</div>
-  <div class="space-y-2 text-sm text-slate-200">
-  <div class="flex justify-between"><span class="text-slate-300">এন্ট্রি ফি × ভেরিফাইড দল</span><span class="font-medium">${money(t.fee)} × ${n}</span></div>
-  <div class="flex justify-between"><span class="text-slate-300">মোট সংগৃহীত টাকা</span><b class="text-slate-100">${money(col)}</b></div>
-  <div class="flex justify-between text-red-300"><span>ম্যানেজমেন্ট ফি (${t.feePct}%)</span><b>− ${money(fee)}</b></div>
-  <div class="flex justify-between border-t border-white/10 pt-2"><span class="text-slate-300 font-medium">নীট পুরস্কারের পরিমাণ</span><b class="text-neon text-base">${money(net)}</b></div></div>
-  <div class="mt-4 grid grid-cols-3 gap-2.5 text-center text-xs sm:text-sm">${(t.prizes||[]).map((p,i)=>p>0?`<div class="rounded-xl bg-black/20 py-2.5"><div class="text-xs text-slate-300 font-medium">${PL(i)}</div><b class="text-gold text-sm sm:text-base">${money(p)}</b></div>`:'').join('')}</div>
-  ${pt>net?`<p class="mt-3.5 rounded-xl bg-gold/10 p-3 text-xs sm:text-sm text-gold leading-relaxed">ঘোষিত পুরস্কারের পরিমাণ বর্তমান কালেকশনের চেয়ে বেশি। পর্যাপ্ত টিম যুক্ত হলে এটি আনলক হবে।</p>`:''}</section>`;
 }
 function placings(t){
   const ks=Object.keys(t.rounds||{}).sort((a,b)=>a.slice(1)-b.slice(1));
@@ -199,8 +189,8 @@ function drawT(){
   <p class="mt-1 text-xs sm:text-sm text-slate-300">পরিচালনায় <strong class="text-slate-200">${esc(t.hostName)}</strong> · ${fdate(t.start)}${t.status==='open'&&countdown(t.start)?' · '+countdown(t.start):''}</p></div>
   ${t.champion?`<div class="rounded-2xl bg-gradient-to-r from-gold/30 to-gold/5 p-4 text-center shadow-lg"><i data-lucide="crown" class="mx-auto h-8 w-8 text-gold"></i><div class="text-xs text-gold font-bold tracking-wider mt-1">চ্যাম্পিয়ন দল</div><div class="text-xl font-black text-slate-100 mt-0.5">${esc(t.champion.team)}</div></div>`:''}
   <div><div id="hs" class="h-20 animate-pulse rounded-2xl bg-slate-800/60"></div>
-  <div class="mt-1.5 flex justify-end gap-3 text-xs">${user&&t.hostPhone?`<a target="_blank" rel="noopener" href="https://wa.me/${String(t.hostPhone).replace(/\D/g,'')}" class="text-neon underline font-medium">হোস্টের সাথে যোগাযোগ</a>`:''}${!host?`<button data-act="report" class="text-red-400 underline font-medium">হোস্টের বিরুদ্ধে অভিযোগ</button>`:''}</div></div>
-  ${transparency(t)}
+  <div class="mt-1.5 flex justify-end gap-3 text-xs">${user&&t.hostPhone?`<a target="_blank" rel="noopener" href="https://wa.me/${String(t.hostPhone).replace(/\D/g,'')}" class="text-neon underline font-medium">হোস্টের সাথে যোগাযোগ</a>`:''}${!host?`<button data-act="report" class="text-red-400 underline font-medium">হোস্ট / টুর্নামেন্ট রিপোর্ট করুন</button>`:''}</div></div>
+  
   <div class="flex flex-wrap gap-2">
   ${t.status==='open'&&!me&&!full?`<button data-act="join" class="btn btn-n flex-1 py-3 text-base font-bold"><i data-lucide="log-in" class="h-4 w-4"></i>যুক্ত হোন · ${t.fee>0?money(t.fee):'ফ্রি'}</button>`:''}
   ${me&&t.status==='open'?(isPaid(me)?`<div class="btn btn-g flex-1 !text-neon py-3 text-sm font-bold"><i data-lucide="check-circle-2" class="h-4 w-4"></i>আপনি যুক্ত আছেন</div>`:`<div class="btn btn-g flex-1 !text-gold py-3 text-sm font-bold"><i data-lucide="clock" class="h-4 w-4"></i>পেমেন্ট যাচাইয়ের অপেক্ষায়</div>`):''}
@@ -214,7 +204,7 @@ function drawT(){
    ${review.length?`<div class="space-y-2"><div class="text-xs font-bold text-slate-300">আপনার যাচাই প্রয়োজন</div>${review.map(x=>`<a href="#/m/${t.id}/${x.r}/${x.i}" class="flex items-center justify-between rounded-xl bg-slate-900/60 p-3 text-sm hover:bg-white/[0.05]"><span>${esc(x.m.a.team)} vs ${esc(x.m.b.team)}</span><span class="badge ${x.m.status==='disputed'?'bg-red-500/20 text-red-300':x.m.status==='confirmed'?'bg-neon/20 text-neon':'bg-gold/20 text-gold'}">${x.m.status}</span></a>`).join('')}</div>`:(t.status==='live'?`<p class="text-sm text-slate-300">যাচাই করার মতো কোনো ম্যাচ রেজাল্ট নেই।</p>`:'')}</section>`:''}
   ${t.status==='done'&&payPlaces.length?`<section><h2 class="mb-1 text-lg font-bold text-slate-100">পুরস্কার প্রদান স্ট্যাটাস</h2><p class="mb-3 text-xs text-slate-300 leading-relaxed">ফাইনাল খেলার ২৪ ঘণ্টার মধ্যে হোস্ট প্রাইজমানি পাঠিয়ে এখানে ট্রানজেকশন আইডি দেবেন।</p><div class="space-y-2.5">${payPlaces.map(payRow).join('')}</div></section>`:''}
   ${t.rounds&&Object.keys(t.rounds).length?`<section><h2 class="mb-3 text-lg font-bold text-slate-100">টুর্নামেন্ট ব্র্যাকেট (ফিক্সচার)</h2>${renderBracket(t,user?.uid)}</section>`:''}
-  <section><h2 class="mb-3 text-lg font-bold text-slate-100">দলসমূহ (${t.players.length}/${t.max})</h2><div class="grid gap-2.5 sm:grid-cols-2">${t.players.map((p,i)=>`<div class="glass flex items-center gap-3 rounded-xl p-3 text-sm"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10 text-xs font-bold text-slate-200">${i+1}</span><span class="flex-1 truncate font-semibold text-slate-100">${esc(p.team)}</span>${isPaid(p)?'':`<span class="badge bg-gold/15 text-gold">অপেক্ষমাণ</span>`}</div>`).join('')||`<p class="text-sm text-slate-300">এখানে এখনো কোনো তথ্য নেই।</p>`}</div></section>
+  <section><h2 class="mb-3 text-lg font-bold text-slate-100">দলসমূহ (${t.players.length}/${t.max})</h2><div class="grid gap-2.5 sm:grid-cols-2">${t.players.map((p,i)=>`<a href="#/u/${p.uid}" class="glass flex items-center gap-3 rounded-xl p-3 text-sm hover:border-volt/40 transition"><span class="grid h-7 w-7 place-items-center rounded-lg bg-white/10 text-xs font-bold text-slate-200">${i+1}</span><img src="${esc(p.avatar||'https://via.placeholder.com/40')}" class="h-7 w-7 rounded-full object-cover"><span class="flex-1 truncate font-semibold text-slate-100">${esc(p.team)}</span>${isPaid(p)?'':`<span class="badge bg-gold/15 text-gold">অপেক্ষমাণ</span>`}</a>`).join('')||`<p class="text-sm text-slate-300">এখানে এখনো কোনো তথ্য নেই।</p>`}</div></section>
   <section class="glass rounded-2xl p-4 sm:p-5"><h2 class="mb-2 text-lg font-bold text-slate-100">টুর্নামেন্টের সাধারণ নিয়ম</h2><p class="whitespace-pre-line text-sm text-slate-300 leading-relaxed">${esc(t.rules)}</p></section></div>`);
   fillHost();
 }
@@ -229,10 +219,10 @@ const actions={
    <li>✅ জয়ী খেলোয়াড় স্কোর ও স্ক্রিনশট সাবমিট করবে। প্রতিপক্ষ তা কনফার্ম বা ডিসপিউট করবে।</li><li>✅ পরবর্তী রাউন্ডে যাওয়ার আগে হোস্ট প্রতিটি রেজাল্ট যাচাই করবেন।</li>
    <li>✅ হোস্ট TrxID চেক করে পেমেন্ট কনফার্ম করার পরেই কেবল টিম লিস্টে যুক্ত হবে।</li>
    <li>🚫 ম্যাচ ফিক্সিং, ইচ্ছাকৃত হার বা দুর্নীতি প্রমাণিত হলে চিরতরে ব্যান ও পুরস্কার বাজেয়াপ্ত করা হবে।</li><li>🚫 ফেক আইডি বা একাধিক একাউন্ট ব্যবহার করলে ডিসকোয়ালিফাই করা হবে।</li>
-   <li>🔎 কোনো বিতর্ক দেখা দিলে উভয়পক্ষকে ফুল ম্যাচ রেকর্ডিং বা স্ক্রিনরেকর্ড দিতে বলা হতে পারে।</li><li>💰 প্রতিটি টুর্নামেন্ট পেজে পুরস্কার ও ম্যানেজমেন্ট ফি স্পষ্টভাবে দেখানো হয়।</li></ul>`)},
+   <li>🔎 কোনো বিতর্ক দেখা দিলে উভয়পক্ষকে ফুল ম্যাচ রেকর্ডিং বা স্ক্রিনরেকর্ড দিতে বলা হতে পারে।</li></ul>`)},
   join(){
     if(!needAuth())return;
-    if(!complete(profile)){toast('প্রথমে আপনার প্রোফাইল সম্পূর্ণ করুন','err');location.hash='#/me';return}
+    if(!complete(profile)){toast('প্রথমে আপনার প্রোফাইল সম্পূর্ণ করুন (Team Name, Phone, Avatar compulsory)','err');location.hash='#/me';return}
     const pay=T.fee>0,pl=pay?[...PLEDGE,PAYPLEDGE]:PLEDGE;
     const m=modal(`<h3 class="mb-1 text-lg font-bold text-slate-100">যুক্ত হোন · ${esc(T.name)}</h3><p class="mb-4 text-sm text-slate-300">এন্ট্রি ফি: ${pay?money(T.fee):'ফ্রি'}</p>
     ${pay?`<div class="mb-4 space-y-3 rounded-2xl border border-gold/40 bg-gold/5 p-4"><div class="text-sm font-bold text-gold">ধাপ ১: এন্ট্রি ফি পাঠিয়ে দিন</div><p class="whitespace-pre-line text-sm text-slate-200 leading-relaxed">${esc(T.payInfo||'হোস্টের দেওয়া নম্বরে টাকা পাঠান')}</p>
@@ -281,14 +271,14 @@ const actions={
     m.$('#ok').onclick=async()=>{
       const wid=m.$('#pw').value,trx=m.$('#pt').value.trim(),w=cs.find(c=>c.uid===wid);
       if(trx.length<6)return toast('সঠিক ট্রানজেকশন আইডি দিন','err');
-      const ok=await run(t=>{if(t.hostId!==user.uid)throw Error('শুধুমাত্র হোস্টের জন্য অনুমোদিত');if(t.payouts[i]?.ok===true)throw Error('এই কাজের অনুমতি নেই');t.payouts[i]={uid:w.uid,team:w.team,amount:+t.prizes[i]||0,trx,ok:null,at:Date.now()}},'পেমেন্ট সফলভাবে রেকর্ড করা হয়েছে');
+      const ok=await run(t=>{if(t.hostId!==user.uid)throw Error('শুধুমাত্র হোস্টের জন্য অনুমোদিত');if(t.payouts[i]?.ok===true)throw Error('এই কাজের অনুমতি নেই');t.payouts[i]={uid:user.uid,team:w.team,amount:+t.prizes[i]||0,trx,ok:null,at:Date.now()}},'পেমেন্ট সফলভাবে রেকর্ড করা হয়েছে');
       if(ok)m.close()};
   },
   pconf(d){run(t=>{const po=t.payouts[+d.p];if(!po||po.uid!==user.uid)throw Error('এই কাজের অনুমতি নেই');po.ok=d.v==='1'},'ধন্যবাদ, রেকর্ড করা হয়েছে')},
   report(){
     if(!needAuth())return;
-    const why=prompt('কেন আপনি এই হোস্টের বিরুদ্ধে রিপোর্ট করতে চান?');if(!why)return;
-    run(t=>{if(t.hostId===user.uid)throw Error('এই কাজের অনুমতি নেই');if(t.reports.some(r=>r.uid===user.uid))throw Error('আপনি ইতিমধ্যেই এই হোস্টের বিরুদ্ধে রিপোর্ট করেছেন');t.reports.push({uid:user.uid,why:why.slice(0,300),at:Date.now()})},'রিপোর্ট সফলভাবে পাঠানো হয়েছে');
+    const why=prompt('কেন আপনি এই হোস্ট বা টুর্নামেন্টের বিরুদ্ধে রিপোর্ট করতে চান?');if(!why)return;
+    run(t=>{if(t.hostId===user.uid)throw Error('নিজের টুর্নামেন্টে নিজের রিপোর্ট দেওয়া যাবে না');if(t.reports.some(r=>r.uid===user.uid))throw Error('আপনি ইতিমধ্যেই রিপোর্ট করেছেন');t.reports.push({uid:user.uid,team:profile?.team||'খেলোয়াড়',why:why.slice(0,300),at:Date.now()})},'রিপোর্ট সফলভাবে পাঠানো হয়েছে');
   },
   async logout(){await F.signOut(auth);location.hash='#/'}
 };
@@ -304,6 +294,30 @@ function hostView(id){
     <h1 class="text-2xl font-black text-slate-100">${esc(ts[0].hostName)}</h1>${trustBox(r)}
     <h2 class="font-bold text-lg text-slate-100 mt-4">এই হোস্টের অন্যান্য টুর্নামেন্ট</h2><div class="space-y-3">${ts.map(t=>card(t,ts)).join('')}</div></div>`);
   }).catch(e=>toast(e.message,'err'));
+}
+
+async function publicProfileView(uid){
+  try {
+    const docRef = await F.getDoc(F.doc(db, 'users', uid));
+    if(!docRef.exists()) return setView(`<p class="p-8 text-center text-slate-300">ইউজার পাওয়া যায়নি</p>`);
+    const uData = docRef.data();
+    const avatarHtml = uData.avatar ? `<img src="${esc(uData.avatar)}" class="h-24 w-24 rounded-full object-cover border-2 border-volt mx-auto shadow-lg">` : `<div class="grid h-24 w-24 place-items-center rounded-full bg-volt/20 text-volt text-3xl font-black mx-auto">${esc((uData.team||'?')[0].toUpperCase())}</div>`;
+    
+    setView(`<div class="p-6 max-w-md mx-auto space-y-4 text-center">
+      <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-xs text-volt font-medium self-start mb-2"><i data-lucide="chevron-left" class="h-4 w-4"></i>ফিরে যান</a>
+      <div class="glass rounded-3xl p-6 space-y-4 shadow-xl">
+        ${avatarHtml}
+        <div>
+          <h1 class="text-2xl font-black text-slate-100">${esc(uData.team || 'Unknown Team')}</h1>
+          <span class="badge bg-volt/15 text-volt mt-2">DLS Player</span>
+        </div>
+        <p class="text-xs text-slate-400 border-t border-white/10 pt-3 leading-relaxed">গোপনীয়তা রক্ষার জন্য অন্যান্য ইউজাররা শুধু আপনার টিম নেম এবং প্রোফাইল পিকচার দেখতে পাবেন।</p>
+      </div>
+    </div>`);
+    icons();
+  } catch(e) {
+    toast(e.message, 'err');
+  }
 }
 
 function matchView(id,r,i){
@@ -384,23 +398,23 @@ async function checkHostSubscription(uid) {
   try {
     const q = F.query(F.collection(db, 'subscriptions'), F.where('uid', '==', uid));
     const snap = await F.getDocs(q);
-    if (snap.empty) return false;
-    let valid = false;
+    if (snap.empty) return { active: false };
+    let active = false, subData = null;
     snap.docs.forEach(d => {
       const data = d.data();
       const st = String(data.status || '').toLowerCase().trim();
       if (st === 'approved') {
         if (data.targetExpire) {
           const exp = new Date(data.targetExpire).getTime();
-          if (exp > Date.now()) valid = true;
+          if (exp > Date.now()) { active = true; subData = data; }
         } else {
-          valid = true;
+          active = true; subData = data;
         }
       }
     });
-    return valid;
+    return { active, subData };
   } catch(e) {
-    return false;
+    return { active: false };
   }
 }
 
@@ -408,7 +422,7 @@ async function createView(){
   if(!user){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">টুর্নামেন্ট হোস্ট করতে প্রথমে সাইন ইন করুন।</p><button data-act="auth" class="btn btn-p">প্রবেশ করুন</button></div>`);return}
   if(!complete(profile)){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">হোস্ট করার আগে আপনার প্রোফাইল সম্পূর্ণ করে নিন।</p><a href="#/me" class="btn btn-p">প্রোফাইল পেজে যান</a></div>`);return}
 
-  const isSubActive = await checkHostSubscription(user.uid);
+  const { active: isSubActive } = await checkHostSubscription(user.uid);
 
   if (!isSubActive) {
     setView(`<div class="space-y-4 p-4 max-w-xl mx-auto">
@@ -429,7 +443,7 @@ async function createView(){
           </div>
           <div class="rounded-2xl border border-gold/40 bg-gold/5 p-4">
             <div class="text-xs text-gold font-bold">৬ মাস</div>
-            <div class="text-xl font-black text-gold mt-1">৫০০ টাকা</div>
+            <div class="text-xl font-black text-gold mt-1"> ৫০০ টাকা</div>
           </div>
         </div>
 
@@ -486,14 +500,33 @@ async function createView(){
     return;
   }
 
-  setView(`<form id="cf" class="space-y-4 p-4"><h1 class="text-2xl font-black text-slate-100">টুর্নামেন্ট হোস্ট করুন</h1>
+  // Host setup form with custom commission percentage + Styled dark theme datetime input picker
+  setView(`<form id="cf" class="space-y-4 p-4 max-w-xl mx-auto"><h1 class="text-2xl font-black text-slate-100">টুর্নামেন্ট হোস্ট করুন</h1>
   <div><label class="lbl">টুর্নামেন্টের নাম</label><input class="inp text-slate-100" name="name" required maxlength="60" placeholder="Friday Night Cup"></div>
   <div class="grid grid-cols-2 gap-3"><div><label class="lbl">সর্বোচ্চ দলের সংখ্যা</label><select class="inp text-slate-100" name="max"><option>4</option><option selected>8</option><option>16</option><option>32</option></select></div>
   <div><label class="lbl">এন্ট্রি ফি (টাকায়)</label><input class="inp text-slate-100" name="fee" type="number" min="0" value="0" required></div></div>
-  <div><label class="lbl">শুরুর তারিখ ও সময়</label><input class="inp text-slate-100" name="start" type="datetime-local" required></div>
-  <div class="glass rounded-2xl p-4"><div class="mb-2 text-sm font-bold text-gold">পুরস্কারের বিবরণ (টাকায়)</div><div class="grid grid-cols-3 gap-2">
-   <div><label class="lbl">${PL(0)}</label><input class="inp text-slate-100" name="p1" type="number" min="0" value="0"></div><div><label class="lbl">${PL(1)}</label><input class="inp text-slate-100" name="p2" type="number" min="0" value="0"></div><div><label class="lbl">${PL(2)}</label><input class="inp text-slate-100" name="p3" type="number" min="0" value="0"></div></div>
-   <div class="mt-3.5"><label class="lbl">ম্যানেজমেন্ট ফি (এন্ট্রি ফি এর কত %)</label><input class="inp text-slate-100" name="feePct" type="number" min="0" max="30" value="10" required></div></div>
+  
+  <div>
+    <label class="lbl flex items-center gap-1.5"><i data-lucide="calendar" class="h-4 w-4 text-volt"></i> শুরুর তারিখ ও সময়</label>
+    <div class="relative">
+      <input class="inp text-slate-100 font-semibold !bg-slate-900/90 !border-volt/40 focus:!border-volt color-scheme-dark p-3.5 rounded-xl w-full text-sm" name="start" type="datetime-local" style="color-scheme: dark;" required>
+    </div>
+  </div>
+
+  <div class="glass rounded-2xl p-4 space-y-3">
+    <div class="text-sm font-bold text-gold flex items-center gap-2"><i data-lucide="trophy" class="h-4 w-4 text-gold"></i> পুরস্কারের বিবরণ (টাকায়)</div>
+    <div class="grid grid-cols-3 gap-2">
+      <div><label class="lbl">${PL(0)}</label><input class="inp text-slate-100" name="p1" type="number" min="0" value="0"></div>
+      <div><label class="lbl">${PL(1)}</label><input class="inp text-slate-100" name="p2" type="number" min="0" value="0"></div>
+      <div><label class="lbl">${PL(2)}</label><input class="inp text-slate-100" name="p3" type="number" min="0" value="0"></div>
+    </div>
+    <div class="pt-2">
+      <label class="lbl">হোস্টের নিজস্ব কমিশন / লাভ (%)</label>
+      <input class="inp text-slate-100" name="feePct" type="number" min="0" max="100" value="10" placeholder="১০%" required>
+      <p class="text-[11px] text-slate-400 mt-1">এটি আপনার নিজের লাভের অংশ (ম্যানেজমেন্ট ফি)। সাইট ওনার থেকে অতিরিক্ত কোনো কমিশন নেওয়া হবে না।</p>
+    </div>
+  </div>
+
   <div><label class="lbl">পেমেন্ট নির্দেশিকা (বিকাশ/নগদ নম্বর ও পাঠানোর নিয়ম)</label><textarea class="inp text-slate-100" name="payInfo" rows="2.5" placeholder="bKash 01XXXXXXXXX (Personal), Send Money"></textarea></div>
   <div><label class="lbl">টুর্নামেন্টের সাধারণ নিয়ম</label><textarea class="inp text-slate-100 leading-relaxed" name="rules" rows="5">১. হোস্টের দেওয়া ফ্রেন্ডলি রুম কোড ব্যবহার করে ম্যাচ খেলুন।\n২. খেলায় কোনো প্রকার অযথা পজ বা সময় নষ্ট করা নিষিদ্ধ।\n৩. ডিসকানেক্ট হলে ৫ মিনিটের মধ্যে ফিরে এসে ম্যাচ রিকানেক্ট করতে হবে।\n৪. ম্যাচ শেষে জয়ী দল ফুল-স্ক্রিন স্পষ্ট স্কোর স্ক্রিনশট আপলোড করবে।</textarea></div>
   <label class="flex cursor-pointer items-start gap-3 rounded-xl bg-slate-900/60 p-3.5 text-sm"><input type="checkbox" name="pledge" required class="mt-0.5 h-4 w-4 accent-cyan-500 shrink-0"><span class="text-slate-300 leading-relaxed">আমি সততার সাথে পেমেন্ট ভেরিফাই করব এবং ফাইনালের ২৪ ঘণ্টার মধ্যে পুরস্কারের টাকা বুঝিয়ে দেব বলে প্রতিশ্রুতি দিচ্ছি।</span></label>
@@ -501,24 +534,46 @@ async function createView(){
   
   $('#cf').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
     if(+d.fee>0&&!d.payInfo.trim())return toast('পেইড টুর্নামেন্টের জন্য সঠিক পেমেন্ট নির্দেশিকা দিন','err');
-    const prizes=[+d.p1,+d.p2,+d.p3],maxNet=Math.round(+d.fee*+d.max*(1-+d.feePct/100));
-    if(prizes.reduce((a,b)=>a+b,0)>maxNet&&!confirm('আপনার ঘোষণা করা পুরস্কার সংগৃহীত এন্ট্রি ফি-র চেয়ে বেশি। ঘাটতি টাকা নিজের পক্ষ থেকে দিতে হবে। চালিয়ে যাবেন?'))return;
+    const prizes=[+d.p1,+d.p2,+d.p3];
     $('#cb').disabled=true;
-    try{const ref=await F.addDoc(F.collection(db,'tournaments'),{name:d.name.trim(),rules:d.rules,fee:+d.fee,feePct:+d.feePct,prizes,payInfo:d.payInfo,max:+d.max,start:d.start,
+    try{const ref=await F.addDoc(F.collection(db,'tournaments'),{name:d.name.trim(),rules:d.rules,fee:+d.fee,feePct:+d.feePct||0,prizes,payInfo:d.payInfo,max:+d.max,start:d.start,
       hostId:user.uid,hostName:profile.team,hostPhone:profile.phone,status:'open',players:[],rounds:{},payouts:{},reports:[],champion:null,createdAt:F.serverTimestamp()});
       toast('টুর্নামেন্ট সফলভাবে তৈরি হয়েছে!');location.hash='#/t/'+ref.id}catch(err){toast(err.message,'err');$('#cb').disabled=false}};
 }
 
-function profileView(){
+async function profileView(){
   if(!user){setView(`<div class="p-8 text-center"><p class="mb-4 text-slate-300 text-sm">প্রোফাইল পরিচালনা করতে সাইন ইন করুন।</p><button data-act="auth" class="btn btn-p">প্রবেশ করুন</button></div>`);return}
   const p=profile||{};
-  setView(`<div class="space-y-6 p-4"><form id="pf" class="space-y-4"><h1 class="text-2xl font-black text-slate-100">আপনার প্রোফাইল</h1><p class="text-xs sm:text-sm text-slate-300">${esc(user.email||'')} · ম্যাচ রুমে আপনার প্রতিপক্ষ এই তথ্যগুলো দেখতে পাবেন।</p>
-  <div><label class="lbl">ডিএলএস টিম নেম (Team Name)</label><input class="inp text-slate-100" name="team" required maxlength="30" value="${esc(p.team)}"></div>
-  <div><label class="lbl">প্রোফাইল পিকচার সিলেক্ট করুন (Device থেকে)</label><input class="inp text-slate-100 file:mr-3 file:rounded-lg file:border-0 file:bg-volt file:px-3 file:py-1.5 file:text-xs file:font-bold" id="imgFile" type="file" accept="image/*"><input type="hidden" name="avatar" id="avatarVal" value="${esc(p.avatar)}"></div>
+  const { active: subActive, subData } = await checkHostSubscription(user.uid);
+
+  setView(`<div class="space-y-6 p-4">
+  <div class="glass rounded-2xl p-4 flex items-center justify-between">
+    <div>
+      <div class="text-xs text-slate-400 font-medium">হস্টিং সাবস্ক্রিপশন স্ট্যাটাস</div>
+      <div class="text-base font-extrabold ${subActive?'text-neon':'text-gold'}">${subActive?'অ্যাক্টিভ (Host Unlocked)':'ইনঅ্যাক্টিভ (সদস্য নন)'}</div>
+      ${subActive&&subData?.targetExpire?`<div class="text-[11px] text-slate-300 mt-0.5">মেয়াদ: ${new Date(subData.targetExpire).toLocaleDateString('bn-BD')} পর্যন্ত</div>`:''}
+    </div>
+    ${!subActive?`<a href="#/new" class="btn btn-n !py-1.5 !px-3 text-xs font-bold">সাবস্ক্রাইব করুন</a>`:''}
+  </div>
+
+  <form id="pf" class="space-y-4">
+  <h1 class="text-2xl font-black text-slate-100">আপনার প্রোফাইল</h1>
+  <p class="text-xs sm:text-sm text-slate-300">${esc(user.email||'')} · (ফেসবুক লিংক ছাড়া অন্যান্য ঘর পূরণ বাধ্যতামূলক)</p>
+  <div><label class="lbl">ডিএলএস টিম নেম (Team Name) <span class="text-red-400">*</span></label><input class="inp text-slate-100" name="team" required maxlength="30" value="${esc(p.team)}"></div>
+  <div><label class="lbl">প্রোফাইল পিকচার সিলেক্ট করুন <span class="text-red-400">*</span></label><input class="inp text-slate-100 file:mr-3 file:rounded-lg file:border-0 file:bg-volt file:px-3 file:py-1.5 file:text-xs file:font-bold" id="imgFile" type="file" accept="image/*"><input type="hidden" name="avatar" id="avatarVal" value="${esc(p.avatar)}"></div>
   ${p.avatar?`<div class="flex items-center gap-3"><img src="${esc(p.avatar)}" class="h-12 w-12 rounded-full object-cover border border-volt/40"><span class="text-xs text-slate-400">বর্তমান ছবি</span></div>`:''}
-  <div><label class="lbl">হোয়াটসঅ্যাপ / মোবাইল নম্বর (যেমন: 8801XXXXXXXXX)</label><input class="inp text-slate-100" name="phone" required type="tel" placeholder="8801XXXXXXXXX" value="${esc(p.phone)}"></div>
-  <div><label class="lbl">ফেসবুক প্রোফাইল লিংক (Profile Link)</label><input class="inp text-slate-100" name="fb" type="url" placeholder="https://facebook.com/…" value="${esc(p.fb)}"></div>
-  <button class="btn btn-p w-full py-3 font-bold">প্রোফাইল সেভ করুন</button><button type="button" data-act="logout" class="btn btn-g w-full py-3 text-red-400 font-semibold"><i data-lucide="log-out" class="h-4 w-4"></i>লগআউট (Sign Out)</button></form>
+  <div><label class="lbl">হোয়াটসঅ্যাপ / মোবাইল নম্বর <span class="text-red-400">*</span></label><input class="inp text-slate-100" name="phone" required type="tel" placeholder="8801XXXXXXXXX" value="${esc(p.phone)}"></div>
+  <div><label class="lbl">ফেসবুক প্রোফাইল লিংক (ঐচ্ছিক)</label><input class="inp text-slate-100" name="fb" type="url" placeholder="https://facebook.com/…" value="${esc(p.fb)}"></div>
+  <button class="btn btn-p w-full py-3 font-bold">প্রোফাইল সেভ করুন</button>
+  </form>
+
+  <section class="glass rounded-2xl p-4 space-y-2">
+    <div class="font-bold text-slate-100 text-sm flex items-center gap-2"><i data-lucide="mail" class="h-4 w-4 text-volt"></i>যোগাযোগ ও অভিযোগ (Contact Us / Complain)</div>
+    <p class="text-xs text-slate-300 leading-relaxed">যেকোনো সমস্যা, অভিযোগ বা সহায়তার জন্য আমাদের অফিসিয়াল ইমেইলে সরাসরি মেসেজ দিন:</p>
+    <a href="mailto:forbusinessshaor@gmail.com" class="inline-block text-xs text-volt font-extrabold underline select-all">forbusinessshaor@gmail.com</a>
+  </section>
+
+  <button type="button" data-act="logout" class="btn btn-g w-full py-3 text-red-400 font-semibold"><i data-lucide="log-out" class="h-4 w-4"></i>লগআউট (Sign Out)</button>
   <section id="mine" class="space-y-4"></section></div>`);
   
   $('#imgFile').onchange=e=>{
@@ -540,6 +595,7 @@ function profileView(){
 
   $('#pf').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
     d.avatar=$('#avatarVal').value;
+    if(!d.avatar) return toast('প্রোফাইল ছবি দেয়া বাধ্যতামূলক!','err');
     try{await F.setDoc(F.doc(db,'users',user.uid),d,{merge:true});profile={...profile,...d};header();toast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে!');location.hash='#/'}catch(err){toast(err.message,'err')}};
   
   F.getDocs(F.collection(db,'tournaments')).then(s=>{
@@ -548,4 +604,35 @@ function profileView(){
     const sec=(h,l)=>l.length?`<div><h2 class="mb-2.5 font-bold text-base text-slate-100">${h}</h2><div class="space-y-2">${l.map(row).join('')}</div></div>`:'';
     const el=$('#mine');if(el)el.innerHTML=`<div class="space-y-4">${sec('আমার যুক্ত হওয়া টুর্নামেন্টসমূহ',joined)}${sec('আমার হোস্ট করা টুর্নামেন্টসমূহ',hosted)}</div>`;
   }).catch(()=>{});
+}
+
+async function adminReportsView(){
+  try {
+    const s = await F.getDocs(F.collection(db,'tournaments'));
+    let reportsList = [];
+    s.docs.forEach(d => {
+      const t = d.data();
+      if(t.reports && t.reports.length) {
+        t.reports.forEach(r => {
+          reportsList.push({ tName: t.name, hostName: t.hostName, ...r });
+        });
+      }
+    });
+
+    setView(`<div class="space-y-4 p-4 max-w-2xl mx-auto">
+      <h1 class="text-2xl font-black text-slate-100 flex items-center gap-2"><i data-lucide="shield-alert" class="h-6 w-6 text-red-400"></i>অ্যাডমিন রিপোর্টস ড্যাশবোর্ড</h1>
+      <p class="text-xs text-slate-300">টুর্নামেন্ট বা হোস্টের বিরুদ্ধে জমা পড়া সব অভিযোগের তালিকা:</p>
+      <div class="space-y-3">
+        ${reportsList.length ? reportsList.map(r => `<div class="glass rounded-2xl p-4 space-y-1.5 border border-red-500/30">
+          <div class="flex justify-between items-center"><b class="text-volt text-sm">${esc(r.tName)}</b><span class="text-[11px] text-slate-400">${r.at ? new Date(r.at).toLocaleDateString('bn-BD') : ''}</span></div>
+          <div class="text-xs text-slate-300">হোস্ট: <b class="text-slate-100">${esc(r.hostName)}</b></div>
+          <div class="text-xs text-slate-300">অভিযোগকারী: <b class="text-slate-100">${esc(r.team)}</b></div>
+          <div class="rounded-xl bg-red-500/10 p-2.5 text-xs text-red-200 mt-2">কারণ: ${esc(r.why)}</div>
+        </div>`).join('') : `<div class="glass rounded-2xl p-8 text-center text-sm text-slate-400">কোনো রিপোর্ট বা অভিযোগ পাওয়া যায়নি।</div>`}
+      </div>
+    </div>`);
+    icons();
+  } catch(e) {
+    toast(e.message, 'err');
+  }
 }

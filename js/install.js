@@ -1,51 +1,50 @@
-// Install-app banner (standalone: no imports needed). Shows until the app is installed or dismissed.
+// Fixed "Install app" button (standalone, no imports). Stays visible until the app is installed.
 // After you build the Android APK, paste its direct link here (GitHub Releases link works):
 const APK_URL='https://github.com/shabbir749/dls/releases/download/app/DLS.Tournament.Hub.apk';   // e.g. 'https://github.com/shabbir749/dls/releases/download/v1/dls-hub.apk'
 
 const T={
-  bn:{title:'DLS Hub অ্যাপ ইনস্টল করুন',sub:'হোম স্ক্রিন থেকে এক ট্যাপে খুলুন',install:'ইনস্টল',apk:'APK ডাউনলোড',ios:'iPhone-এ ইনস্টল করতে Safari-তে নিচের Share বাটন চাপুন, তারপর "Add to Home Screen" চাপুন।'},
-  en:{title:'Install the DLS Hub app',sub:'Open it from your home screen in one tap',install:'Install',apk:'Download APK',ios:'On iPhone: tap the Share button in Safari, then "Add to Home Screen".'}
+  bn:{install:'অ্যাপ ইনস্টল',apk:'APK ডাউনলোড',ios:'iPhone-এ ইনস্টল করতে Safari-তে নিচের Share বাটন চাপুন, তারপর "Add to Home Screen" চাপুন।',other:'ইনস্টল করতে ব্রাউজারের মেনু (⋮) থেকে "Install app" বা "Add to Home screen" চাপুন।'},
+  en:{install:'Install app',apk:'Download APK',ios:'On iPhone: tap the Share button in Safari, then "Add to Home Screen".',other:'To install, open the browser menu (⋮) and tap "Install app" or "Add to Home screen".'}
 };
 const lang=()=>{try{return localStorage.getItem('lang')==='en'?'en':'bn'}catch(e){return 'bn'}};
-const t=()=>T[lang()];
 
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
-const hidden=()=>{try{return Date.now()<+localStorage.getItem('installHideUntil')}catch(e){return false}};
 let deferred=null;
 
+const ICON='<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>';
+
 if(!standalone){
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;render()});
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e});
   addEventListener('appinstalled',()=>{deferred=null;remove()});
-  addEventListener('load',()=>setTimeout(render,1500));
+  addEventListener('load',()=>{render();setInterval(refresh,1000)});
 }
 
-function remove(){document.getElementById('install-bar')?.remove()}
+function remove(){document.getElementById('install-fab')?.remove()}
+
+// Re-draw text if the language was switched, and re-attach if the page re-rendered.
+let shownLang='';
+function refresh(){
+  if(standalone)return;
+  const el=document.getElementById('install-fab');
+  if(!el||shownLang!==lang())render();
+}
 
 function render(){
-  if(standalone||hidden())return remove();
-  if(!deferred&&!isIOS&&!APK_URL)return;          // nothing useful to offer
+  if(standalone)return;
   remove();
-  const s=t(),bar=document.createElement('div');
-  bar.id='install-bar';
-  bar.className='fixed inset-x-0 z-30 mx-auto max-w-3xl px-3';
-  bar.style.bottom='calc(env(safe-area-inset-bottom) + 4.25rem)';
-  const apk=APK_URL?`<a href="${APK_URL}" download class="btn btn-g !min-h-[40px] !px-3 !py-1.5 !text-sm">${s.apk}</a>`:'';
-  const inst=(deferred||isIOS)?`<button id="ib-go" class="btn btn-p !min-h-[40px] !px-3 !py-1.5 !text-sm">${s.install}</button>`:'';
-  bar.innerHTML=`<div class="glass flex items-center gap-3 rounded-2xl p-3">
-    <img src="launchericon-192x192.png" alt="" class="h-11 w-11 rounded-xl">
-    <div class="min-w-0 flex-1"><div class="truncate text-sm font-bold">${s.title}</div><div class="truncate text-xs text-slate-400">${s.sub}</div></div>
-    <div class="flex flex-col gap-1.5">${inst}${apk}</div>
-    <button id="ib-x" aria-label="close" class="self-start px-1 text-xl leading-none text-slate-400">×</button></div>`;
-  document.body.append(bar);
+  const s=T[shownLang=lang()],box=document.createElement('div');
+  box.id='install-fab';
+  box.className='fixed z-30 flex flex-col items-end gap-2';
+  box.style.right='12px';
+  box.style.bottom='calc(env(safe-area-inset-bottom) + 4.5rem)';
+  const apk=APK_URL?`<a href="${APK_URL}" download class="btn btn-g !min-h-[44px] !rounded-full !px-4 !py-2 !text-sm shadow-lg">${s.apk}</a>`:'';
+  box.innerHTML=`${apk}<button id="fab-go" class="btn btn-p !min-h-[48px] !rounded-full !px-5 !py-2 !text-sm">${ICON}${s.install}</button>`;
+  document.body.append(box);
 
-  bar.querySelector('#ib-x').onclick=()=>{
-    try{localStorage.setItem('installHideUntil',String(Date.now()+3*864e5))}catch(e){}
-    remove();
-  };
-  const go=bar.querySelector('#ib-go');
-  if(go)go.onclick=async()=>{
-    if(deferred){deferred.prompt();await deferred.userChoice.catch(()=>{});deferred=null;remove()}
+  box.querySelector('#fab-go').onclick=async()=>{
+    if(deferred){deferred.prompt();await deferred.userChoice.catch(()=>{});deferred=null;}
     else if(isIOS)alert(s.ios);
+    else alert(s.other);
   };
 }

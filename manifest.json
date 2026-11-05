@@ -1,26 +1,41 @@
 {
+  "id": "/index.html",
   "name": "DLS Tournament Hub",
   "short_name": "DLS Hub",
   "description": "Join, host and win Dream League Soccer tournaments with verified payments and fair play.",
   "lang": "bn",
+  "dir": "ltr",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0F172A",
   "theme_color": "#0F172A",
+  "categories": ["games", "sports", "entertainment"],
   "icons": [
     {
-      "src": "https://github.com/shabbir749/dls/blob/main/launchericon-192x192.png?raw=true",
+      "src": "launchericon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "https://github.com/shabbir749/dls/blob/main/launchericon-512x512.png?raw=true",
+      "src": "launchericon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "launchericon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

@@ -176,14 +176,21 @@ function drawT(){
   const review=host?all.filter(x=>['submitted','confirmed','disputed'].includes(x.m.status)):[];
   const payPlaces=[0,1,2].filter(i=>(t.prizes||[])[i]>0);
   
-  // প্রাইজ পুল breakdown হিসাব ও রেন্ডারিং লজিক
+  // প্রাইজ পুল breakdown এবং হোস্ট ফি ডাইনামিক রেন্ডারিং
   const totalPool = prizeTotal(t);
   const prizes = t.prizes || [0, 0, 0];
-  const prizeBreakdownHtml = totalPool > 0 ? `
-    <div class="rounded-2xl border border-gold/40 bg-gold/5 p-4 sm:p-5 space-y-2">
-      <div class="flex items-center gap-2 font-bold text-gold text-base"><i data-lucide="trophy" class="h-5 w-5"></i>পুরস্কারের বিবরণ (Prize Pool)</div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm pt-1">
-        <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">মোট পুরস্কার</div><div class="font-extrabold text-gold text-base mt-0.5">${money(totalPool)}</div></div>
+  const hostPct = t.feePct || 0;
+  const grossCollection = (t.max || 0) * (t.fee || 0);
+  const hostFeeAmount = Math.round((grossCollection * hostPct) / 100);
+
+  const prizeBreakdownHtml = (totalPool > 0 || grossCollection > 0) ? `
+    <div class="rounded-2xl border border-gold/40 bg-gold/5 p-4 sm:p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 font-bold text-gold text-base"><i data-lucide="trophy" class="h-5 w-5"></i>পুরস্কার ও ফি ব্রেকডাউন</div>
+        ${hostPct > 0 ? `<span class="badge bg-volt/15 text-volt text-xs">হোস্ট ফি: ${hostPct}% (${money(hostFeeAmount)})</span>` : `<span class="badge bg-neon/15 text-neon text-xs">০% হোস্ট ফি</span>`}
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+        <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">মোট প্লেয়ার প্রাইজ</div><div class="font-extrabold text-gold text-base mt-0.5">${money(totalPool)}</div></div>
         <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">🥇 ১ম স্থান</div><div class="font-extrabold text-slate-100 text-base mt-0.5">${money(prizes[0]||0)}</div></div>
         <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">🥈 ২য় স্থান</div><div class="font-extrabold text-slate-100 text-base mt-0.5">${money(prizes[1]||0)}</div></div>
         <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">🥉 ৩য় স্থান</div><div class="font-extrabold text-slate-100 text-base mt-0.5">${money(prizes[2]||0)}</div></div>
@@ -517,11 +524,11 @@ async function createView(){
     return;
   }
 
-  // Host setup form with custom commission percentage + Styled dark theme datetime input picker
+  // Host setup form with auto-calculation of host commission percentage and net prize pool
   setView(`<form id="cf" class="space-y-4 p-4 max-w-xl mx-auto"><h1 class="text-2xl font-black text-slate-100">টুর্নামেন্ট হোস্ট করুন</h1>
   <div><label class="lbl">টুর্নামেন্টের নাম</label><input class="inp text-slate-100" name="name" required maxlength="60" placeholder="Friday Night Cup"></div>
-  <div class="grid grid-cols-2 gap-3"><div><label class="lbl">সর্বোচ্চ দলের সংখ্যা</label><select class="inp text-slate-100" name="max"><option>4</option><option selected>8</option><option>16</option><option>32</option></select></div>
-  <div><label class="lbl">এন্ট্রি ফি (টাকায়)</label><input class="inp text-slate-100" name="fee" type="number" min="0" value="0" required></div></div>
+  <div class="grid grid-cols-2 gap-3"><div><label class="lbl">সর্বোচ্চ দলের সংখ্যা</label><select class="inp text-slate-100" id="inMax" name="max"><option>4</option><option selected>8</option><option>16</option><option>32</option></select></div>
+  <div><label class="lbl">এন্ট্রি ফি (টাকায়)</label><input class="inp text-slate-100" id="inFee" name="fee" type="number" min="0" value="50" required></div></div>
   
   <div>
     <label class="lbl flex items-center gap-1.5"><i data-lucide="calendar" class="h-4 w-4 text-volt"></i> শুরুর তারিখ ও সময়</label>
@@ -531,16 +538,18 @@ async function createView(){
   </div>
 
   <div class="glass rounded-2xl p-4 space-y-3">
-    <div class="text-sm font-bold text-gold flex items-center gap-2"><i data-lucide="trophy" class="h-4 w-4 text-gold"></i> পুরস্কারের বিবরণ (টাকায়)</div>
-    <div class="grid grid-cols-3 gap-2">
-      <div><label class="lbl">${PL(0)}</label><input class="inp text-slate-100" name="p1" type="number" min="0" value="0"></div>
-      <div><label class="lbl">${PL(1)}</label><input class="inp text-slate-100" name="p2" type="number" min="0" value="0"></div>
-      <div><label class="lbl">${PL(2)}</label><input class="inp text-slate-100" name="p3" type="number" min="0" value="0"></div>
+    <div class="text-sm font-bold text-gold flex items-center justify-between"><span class="flex items-center gap-2"><i data-lucide="trophy" class="h-4 w-4 text-gold"></i> পুরস্কারের বিবরণ (টাকায়)</span><span id="totColText" class="text-xs text-slate-300 font-normal">মোট কালেকশন: ৳৪০০</span></div>
+    
+    <div class="bg-slate-900/80 p-3 rounded-xl space-y-2 border border-white/5">
+      <div class="flex items-center justify-between"><label class="lbl !mb-0">হোস্টের নিজস্ব কমিশন / লাভ (%)</label><span id="hostCalcAmt" class="text-xs text-volt font-bold">৳৪০ (১০%)</span></div>
+      <input class="inp text-slate-100" id="inFeePct" name="feePct" type="number" min="0" max="100" value="10" placeholder="১০%" required>
+      <p class="text-[11px] text-slate-400">এই শতাংশ হোস্টের ফি হিসেবে বাদ দিয়ে বাকি টাকা ১ ১ম, ২য় ও ৩য় পুরস্কারে স্বয়ংক্রিয়ভাবে ভাগ হয়ে যাবে।</p>
     </div>
-    <div class="pt-2">
-      <label class="lbl">হোস্টের নিজস্ব কমিশন / লাভ (%)</label>
-      <input class="inp text-slate-100" name="feePct" type="number" min="0" max="100" value="10" placeholder="১০%" required>
-      <p class="text-[11px] text-slate-400 mt-1">এটি আপনার নিজের লাভের অংশ (ম্যানেজমেন্ট ফি)। সাইট ওনার থেকে অতিরিক্ত কোনো কমিশন নেওয়া হবে না।</p>
+
+    <div class="grid grid-cols-3 gap-2">
+      <div><label class="lbl">${PL(0)}</label><input class="inp text-slate-100" id="inP1" name="p1" type="number" min="0" value="0"></div>
+      <div><label class="lbl">${PL(1)}</label><input class="inp text-slate-100" id="inP2" name="p2" type="number" min="0" value="0"></div>
+      <div><label class="lbl">${PL(2)}</label><input class="inp text-slate-100" id="inP3" name="p3" type="number" min="0" value="0"></div>
     </div>
   </div>
 
@@ -549,6 +558,33 @@ async function createView(){
   <label class="flex cursor-pointer items-start gap-3 rounded-xl bg-slate-900/60 p-3.5 text-sm"><input type="checkbox" name="pledge" required class="mt-0.5 h-4 w-4 accent-cyan-500 shrink-0"><span class="text-slate-300 leading-relaxed">আমি সততার সাথে পেমেন্ট ভেরিফাই করব এবং ফাইনালের ২৪ ঘণ্টার মধ্যে পুরস্কারের টাকা বুঝিয়ে দেব বলে প্রতিশ্রুতি দিচ্ছি।</span></label>
   <button class="btn btn-p w-full py-3.5 text-base font-bold" id="cb">টুর্নামেন্ট তৈরি করুন</button></form>`);
   
+  // Auto-calculation script logic for tournament host form
+  const recalcPrizes = () => {
+    const max = +$('#inMax').value || 0;
+    const fee = +$('#inFee').value || 0;
+    const pct = +$('#inFeePct').value || 0;
+    
+    const gross = max * fee;
+    const hostFee = Math.round((gross * pct) / 100);
+    const netPrize = gross - hostFee;
+
+    $('#totColText').textContent = `মোট কালেকশন: ৳${gross}`;
+    $('#hostCalcAmt').textContent = `৳${hostFee} (${pct}%)`;
+
+    if (netPrize > 0) {
+      $('#inP1').value = Math.round(netPrize * 0.57); // ~57% to 1st
+      $('#inP2').value = Math.round(netPrize * 0.28); // ~28% to 2nd
+      $('#inP3').value = netPrize - Math.round(netPrize * 0.57) - Math.round(netPrize * 0.28); // ~15% to 3rd
+    } else {
+      $('#inP1').value = 0; $('#inP2').value = 0; $('#inP3').value = 0;
+    }
+  };
+
+  $('#inMax').onchange = recalcPrizes;
+  $('#inFee').oninput = recalcPrizes;
+  $('#inFeePct').oninput = recalcPrizes;
+  recalcPrizes();
+
   $('#cf').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
     if(+d.fee>0&&!d.payInfo.trim())return toast('পেইড টুর্নামেন্টের জন্য সঠিক পেমেন্ট নির্দেশিকা দিন','err');
     const prizes=[+d.p1,+d.p2,+d.p3];

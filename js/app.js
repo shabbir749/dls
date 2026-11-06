@@ -24,16 +24,22 @@ F.onAuthStateChanged(auth,async u=>{
 
 function header(){
   const bal = profile?.balance || 0;
-  $('#hdr').innerHTML=`<div class="flex items-center justify-end w-full max-w-3xl mx-auto px-4 py-2 gap-3">
-    <a href="#/wallet" class="glass px-3.5 py-1.5 rounded-full text-xs font-bold text-gold border border-gold/30 hover:border-gold transition cursor-pointer">My Balance: ৳${bal}</a>
-    ${user?`<a href="#/me" class="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 text-xs font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-7 w-7 rounded-full object-cover"><span class="max-w-[6rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-3 text-xs">প্রবেশ করুন</button>`}
+  $('#hdr').innerHTML=`<div class="flex items-center justify-between w-full max-w-xl mx-auto px-3 py-2 gap-2">
+    <div class="flex items-center gap-1.5 min-w-0">
+      <span class="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-volt text-ink font-bold text-[10px]">DLS</span>
+      <span class="text-xs font-black tracking-tight text-slate-100 truncate">Tournament <span class="text-volt">Hub</span></span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="#/wallet" class="glass px-2.5 py-1 rounded-full text-[11px] font-bold text-gold border border-gold/30 hover:border-gold transition cursor-pointer whitespace-nowrap">Bal: ৳${bal}</a>
+      ${user?`<a href="#/me" class="flex items-center gap-1.5 rounded-full bg-white/10 py-0.5 pl-1 pr-2.5 text-[11px] font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-6 w-6 rounded-full object-cover"><span class="max-w-[4.5rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-2.5 text-[11px]">লগইন</button>`}
+    </div>
   </div>`;
   icons();
 }
 
 function nav(){
   const it=[['','gamepad-2','টুর্নামেন্ট','#/'],['history','scroll','হিস্টরি','#/history'],['wallet','wallet','ওয়ালেট','#/wallet'],['me','user-round','প্রোফাইল','#/me']];
-  $('#nav').innerHTML=`<div class="mx-auto grid max-w-3xl grid-cols-4">${it.map(([k,i,l,h])=>`<a href="${h}" data-nav="${k}" class="flex flex-col items-center gap-1 py-2 text-xs font-medium text-slate-300 transition"><i data-lucide="${i}" class="h-5 w-5"></i>${l}</a>`).join('')}</div>`;
+  $('#nav').innerHTML=`<div class="mx-auto grid max-w-xl grid-cols-4 bg-slate-950/90 backdrop-blur-md border-t border-white/10">${it.map(([k,i,l,h])=>`<a href="${h}" data-nav="${k}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-slate-300 transition"><i data-lucide="${i}" class="h-4 w-4"></i>${l}</a>`).join('')}</div>`;
   icons();
 }
 
@@ -69,17 +75,17 @@ addEventListener('hashchange',route);
 nav();
 
 function drawFeed(){
-  setView(`<div class="space-y-6 p-4 max-w-xl mx-auto">
-    <h1 class="text-xl font-black text-slate-100 flex items-center gap-2"><i data-lucide="zap" class="h-5 w-5 text-volt"></i>চলমান ও আসন্ন টুর্নামেন্টসমূহ</h1>
-    <div id="fl" class="space-y-4"></div>
+  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-20">
+    <h1 class="text-base font-black text-slate-100 flex items-center gap-1.5"><i data-lucide="zap" class="h-4 w-4 text-volt"></i>চলমান ও আসন্ন টুর্নামেন্টসমূহ</h1>
+    <div id="fl" class="space-y-3"></div>
     
-    <div class="glass rounded-3xl p-5 space-y-3 border border-volt/30">
-      <h2 class="font-bold text-volt text-base flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5"></i>টুর্নামেন্টে জয়েন করার নিয়ম ও নির্দেশাবলী (FAQ)</h2>
-      <div class="space-y-2 text-xs text-slate-300">
-        <p><b>১. প্রোফাইল সেটআপ:</b> প্রথমে প্রোফাইল অপশনে গিয়ে আপনার সঠিক টিম নাম, মোবাইল নম্বর এবং প্রোফাইল পিকচার সেট করুন (বাধ্যতামূলক)।</p>
-        <p><b>২. ওয়ালেট ব্যালেন্স:</b> ওয়ালেট অপশনে গিয়ে বিকাশ বা নগদ থেকে 'এড মানি' করে অ্যাকাউন্টে ব্যালেন্স যোগ করুন।</p>
-        <p><b>৩. টুর্নামেন্ট জয়েন:</b> আপনার পছন্দের টুর্নামেন্টে প্রবেশ করে 'টুর্নামেন্ট জয়েন করুন' বাটনে ক্লিক করলেই এন্ট্রি ফি কেটে নেওয়া হবে এবং আপনি সফলভাবে যুক্ত হয়ে যাবেন।</p>
-        <p><b>৪. ম্যাচ আপডেট:</b> ম্যাচ শুরুর সময় অ্যাডমিন রুম কোড প্রদান করবেন। নিয়ম মেনে ম্যাচ খেলুন এবং জয়ী হয়ে প্রাইজমানি জিতে নিন!</p>
+    <div class="glass rounded-2xl p-4 space-y-2 border border-volt/30">
+      <h2 class="font-bold text-volt text-xs flex items-center gap-1.5"><i data-lucide="help-circle" class="h-4 w-4"></i>টুর্নামেন্টে জয়েন করার নিয়ম ও নির্দেশাবলী (FAQ)</h2>
+      <div class="space-y-1.5 text-[11px] text-slate-300">
+        <p><b>১. প্রোফাইল সেটআপ:</b> প্রথমে প্রোফাইল অপশনে গিয়ে সঠিক টিম নাম, মোবাইল নম্বর এবং পিকচার দিন।</p>
+        <p><b>২. ওয়ালেট ব্যালেন্স:</b> ওয়ালেট থেকে বিকাশ/নগদ করে 'এড মানি' করুন।</p>
+        <p><b>৩. টুর্নামেন্ট জয়েন:</b> টুর্নামেন্টে প্রবেশ করে 'জয়েন করুন' ক্লিক করলেই এন্ট্রি ফি কেটে নেওয়া হবে।</p>
+        <p><b>৪. ম্যাচ আপডেট:</b> ম্যাচ শুরুর সময় অ্যাডমিন রুম কোড দেবেন। নিয়ম মেনে খেলুন!</p>
       </div>
     </div>
   </div>`);
@@ -93,39 +99,39 @@ function drawList(){
     const n=(t.players||[]).length, max=t.max||2;
     const pct=Math.min(100,(n/max)*100);
     const cd=countdown(t.start);
-    return `<div class="glass rounded-2xl p-4 sm:p-5 space-y-3 relative overflow-hidden border border-white/10 hover:border-volt/30 transition">
-      <div class="flex justify-between items-start"><h3 class="text-base font-bold text-slate-100">${esc(t.name)}</h3><span class="text-xs text-slate-400 flex items-center gap-1"><i data-lucide="calendar" class="h-3.5 w-3.5 text-volt"></i>${fdate(t.start)}</span></div>
-      ${cd?`<div class="rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-xs font-bold text-amber-300 flex items-center gap-2"><i data-lucide="hourglass" class="h-4 w-4"></i>${cd}</div>`:''}
-      <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-3 rounded-xl">
-        <div><div class="text-[11px] text-slate-400 font-medium">এন্ট্রি ফি:</div><div class="text-base font-black text-volt">৳${t.fee||0}</div></div>
-        <div><div class="text-[11px] text-slate-400 font-medium">উইনিং প্রাইজ:</div><div class="text-base font-black text-gold">৳${t.winnerPrize||0}</div></div>
+    return `<div class="glass rounded-2xl p-3.5 space-y-2.5 relative overflow-hidden border border-white/10 hover:border-volt/30 transition">
+      <div class="flex justify-between items-start gap-2"><h3 class="text-sm font-bold text-slate-100 truncate">${esc(t.name)}</h3><span class="text-[10px] text-slate-400 flex items-center gap-1 whitespace-nowrap"><i data-lucide="calendar" class="h-3 w-3 text-volt"></i>${fdate(t.start)}</span></div>
+      ${cd?`<div class="rounded-xl bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 text-[11px] font-bold text-amber-300 flex items-center gap-1.5"><i data-lucide="hourglass" class="h-3.5 w-3.5 shrink-0"></i>${cd}</div>`:''}
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl">
+        <div><div class="text-[10px] text-slate-400 font-medium">এন্ট্রি ফি:</div><div class="text-sm font-black text-volt">৳${t.fee||0}</div></div>
+        <div><div class="text-[10px] text-slate-400 font-medium">উইনিং প্রাইজ:</div><div class="text-sm font-black text-gold">৳${t.winnerPrize||0}</div></div>
       </div>
       <div class="space-y-1">
-        <div class="flex justify-between text-xs font-semibold text-slate-300"><span>স্লট ফিলাপ</span><span>${n}/${max} Slots</span></div>
-        <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-volt to-neon rounded-full" style="width:${pct}%"></div></div>
+        <div class="flex justify-between text-[11px] font-semibold text-slate-300"><span>স্লট ফিলাপ</span><span>${n}/${max} Slots</span></div>
+        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-volt to-neon rounded-full" style="width:${pct}%"></div></div>
       </div>
-      <a href="#/t/${t.id}" class="btn btn-n w-full py-2.5 text-center font-bold block">টুর্নামেন্ট জয়েন করুন</a>
+      <a href="#/t/${t.id}" class="btn btn-n w-full py-2 text-center text-xs font-bold block">টুর্নামেন্ট জয়েন করুন</a>
     </div>`;
-  }).join('')||`<div class="glass rounded-2xl p-8 text-center text-sm text-slate-300">বর্তমানে কোনো টুর্নামেন্ট নেই।</div>`;
+  }).join('')||`<div class="glass rounded-2xl p-6 text-center text-xs text-slate-300">বর্তমানে কোনো টুর্নামেন্ট নেই।</div>`;
   icons();
 }
 
 function walletView(){
   if(!needAuth())return;
   const bal = profile?.balance || 0, winBal = profile?.winBalance || 0;
-  setView(`<div class="space-y-5 p-4 max-w-xl mx-auto">
-    <div class="glass rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-gold/30">
-      <div class="text-xs text-slate-400 font-medium">আমার ওয়ালেট একাউন্ট</div>
-      <div class="grid grid-cols-2 gap-4 mt-3">
-        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-white/5"><div class="text-xs text-slate-400">মেইন ব্যালেন্স</div><div class="text-xl font-black text-volt mt-0.5">৳${bal}</div></div>
-        <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-white/5"><div class="text-xs text-slate-400">উইনিং ব্যালেন্স</div><div class="text-xl font-black text-gold mt-0.5">৳${winBal}</div></div>
+  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-20">
+    <div class="glass rounded-2xl p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-gold/30">
+      <div class="text-[11px] text-slate-400 font-medium">আমার ওয়ালেট একাউন্ট</div>
+      <div class="grid grid-cols-2 gap-3 mt-2.5">
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-white/5"><div class="text-[10px] text-slate-400">মেইন ব্যালেন্স</div><div class="text-lg font-black text-volt mt-0.5">৳${bal}</div></div>
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-white/5"><div class="text-[10px] text-slate-400">উইনিং ব্যালেন্স</div><div class="text-lg font-black text-gold mt-0.5">৳${winBal}</div></div>
       </div>
     </div>
-    <div class="glass rounded-2xl p-5 space-y-3 text-center">
-      <p class="text-sm text-slate-300">টাকা এড করতে বা তুলতে নিচের বাটন ব্যবহার করুন</p>
-      <div class="grid grid-cols-2 gap-3">
-        <button data-act="addMoneyModal" class="btn btn-n py-3 font-bold">এড মানি</button>
-        <button data-act="withdrawModal" class="btn btn-p py-3 font-bold">উইথড্র</button>
+    <div class="glass rounded-2xl p-4 space-y-2.5 text-center">
+      <p class="text-xs text-slate-300">টাকা এড করতে বা তুলতে নিচের বাটন ব্যবহার করুন</p>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button data-act="addMoneyModal" class="btn btn-n py-2.5 text-xs font-bold">এড মানি</button>
+        <button data-act="withdrawModal" class="btn btn-p py-2.5 text-xs font-bold">উইথড্র</button>
       </div>
     </div>
   </div>`);
@@ -135,23 +141,23 @@ function walletView(){
 const actions={
   auth:authModal,
   addMoneyModal(){
-    const m=modal(`<div class="space-y-4">
-      <h3 class="text-lg font-bold text-slate-100 border-b border-white/10 pb-2">টাকা এড করুন</h3>
+    const m=modal(`<div class="space-y-3">
+      <h3 class="text-base font-bold text-slate-100 border-b border-white/10 pb-2">টাকা এড করুন</h3>
       
-      <div class="rounded-2xl bg-slate-900 p-4 border border-volt/40 text-center space-y-2">
-        <div class="text-xs text-slate-400 font-medium">অফিশিয়াল বিকাশ/নগদ পার্সোনাল নম্বর</div>
-        <div class="text-2xl font-black text-volt tracking-wider select-all" id="copyNum">01878254585</div>
-        <button type="button" id="copyBtn" class="btn btn-n !py-1 !px-4 text-xs font-bold inline-flex items-center gap-1.5"><i data-lucide="copy" class="h-3.5 w-3.5"></i>নম্বর কপি করুন</button>
+      <div class="rounded-xl bg-slate-900 p-3 border border-volt/40 text-center space-y-1.5">
+        <div class="text-[11px] text-slate-400 font-medium">বিকাশ/নগদ পার্সোনাল নম্বর</div>
+        <div class="text-xl font-black text-volt tracking-wider select-all">01878254585</div>
+        <button type="button" id="copyBtn" class="btn btn-n !py-1 !px-3 text-[11px] font-bold inline-flex items-center gap-1"><i data-lucide="copy" class="h-3 w-3"></i>নম্বর কপি করুন</button>
       </div>
 
-      <div class="rounded-2xl bg-slate-900/80 p-3 space-y-1 text-xs text-slate-300 border border-white/10">
-        <div class="font-bold text-volt mb-1">নির্দেশাবলী:</div>
+      <div class="rounded-xl bg-slate-900/80 p-2.5 space-y-1 text-[11px] text-slate-300 border border-white/10">
+        <div class="font-bold text-volt">নির্দেশাবলী:</div>
         <p>১. উপরে দেওয়া নম্বরে Send Money করুন।</p>
-        <p>২. সঠিক টাকা পাঠিয়ে নিচের বক্সে টাকার পরিমাণ ও TrxID দিন।</p>
+        <p>২. সঠিক টাকা পাঠিয়ে নিচের বক্সে পরিমাণ ও TrxID দিন।</p>
       </div>
-      <div><label class="lbl">টাকার পরিমাণ</label><input id="am" class="inp" type="number" placeholder="যেমন: ১০০" min="10"></div>
-      <div><label class="lbl">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
-      <button id="verifyBtn" class="btn btn-n w-full py-3 font-bold">VERIFY & SUBMIT</button>
+      <div><label class="lbl text-xs">টাকার পরিমাণ</label><input id="am" class="inp text-sm" type="number" placeholder="যেমন: ১০০" min="10"></div>
+      <div><label class="lbl text-xs">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp text-sm" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
+      <button id="verifyBtn" class="btn btn-n w-full py-2.5 text-xs font-bold">VERIFY & SUBMIT</button>
     </div>`);
 
     m.$('#copyBtn').onclick=()=>{
@@ -169,16 +175,16 @@ const actions={
     };
   },
   withdrawModal(){
-    const m=modal(`<div class="space-y-4">
-      <h3 class="text-lg font-bold text-slate-100 border-b border-white/10 pb-2">টাকা উইথড্র করুন</h3>
-      <div class="rounded-2xl bg-slate-900/80 p-4 space-y-2 text-xs border border-white/10">
+    const m=modal(`<div class="space-y-3">
+      <h3 class="text-base font-bold text-slate-100 border-b border-white/10 pb-2">টাকা উইথড্র করুন</h3>
+      <div class="rounded-xl bg-slate-900/80 p-3 space-y-1 text-[11px] text-slate-300 border border-white/10">
         <div class="font-bold text-volt">উইথড্র নির্দেশাবলী:</div>
-        <p class="text-slate-300">১. ন্যূনতম উইথড্র ১০০ টাকা।</p>
-        <p class="text-slate-300">২. ২৪ ঘণ্টার মধ্যে পেমেন্ট কমপ্লিট করা হবে।</p>
+        <p>১. ন্যূনতম উইথড্র ১০০ টাকা।</p>
+        <p>২. ২৪ ঘণ্টার মধ্যে পেমেন্ট কমপ্লিট করা হবে।</p>
       </div>
-      <div><label class="lbl">বিকাশ/নগদ নম্বর (Personal)</label><input id="wn" class="inp" type="tel" placeholder="01XXXXXXXXX"></div>
-      <div><label class="lbl">পরিমাণ (৳)</label><input id="wa" class="inp" type="number" placeholder="ন্যূনতম ১০০ টাকা" min="100"></div>
-      <button id="wBtn" class="btn btn-p w-full py-3 font-bold">উইথড্র অনুরোধ পাঠান</button>
+      <div><label class="lbl text-xs">বিকাশ/নগদ নম্বর (Personal)</label><input id="wn" class="inp text-sm" type="tel" placeholder="01XXXXXXXXX"></div>
+      <div><label class="lbl text-xs">পরিমাণ (৳)</label><input id="wa" class="inp text-sm" type="number" placeholder="ন্যূনতম ১০০ টাকা" min="100"></div>
+      <button id="wBtn" class="btn btn-p w-full py-2.5 text-xs font-bold">উইথড্র অনুরোধ পাঠান</button>
     </div>`);
     m.$('#wBtn').onclick=async()=>{
       const amount=+m.$('#wa').value, phone=m.$('#wn').value.trim();
@@ -200,24 +206,24 @@ function tourney(id){
 function drawT(){
   const t=T,uid=user?.uid,me=uid&&t.players.find(p=>p.uid===uid),full=t.players.length>=t.max;
   const n=(t.players||[]).length;
-  setView(`<div class="space-y-4 p-4 max-w-xl mx-auto">
+  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-20">
     <a href="#/" class="inline-flex items-center gap-1 text-xs text-volt font-medium"><i data-lucide="chevron-left" class="h-4 w-4"></i>ফিরে যান</a>
-    <div class="glass rounded-3xl p-5 space-y-4 border border-white/10">
-      <div class="flex justify-between items-start"><h1 class="text-xl font-black text-slate-100">${esc(t.name)}</h1><span class="badge bg-volt/15 text-volt">আসন্ন</span></div>
-      <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-3.5 rounded-2xl">
-        <div><div class="text-xs text-slate-400">এন্ট্রি ফি:</div><div class="text-lg font-black text-volt">৳${t.fee||0}</div></div>
-        <div><div class="text-xs text-slate-400">উইনিং প্রাইজ:</div><div class="text-lg font-black text-gold">৳${t.winnerPrize||0}</div></div>
+    <div class="glass rounded-2xl p-4 space-y-3 border border-white/10">
+      <div class="flex justify-between items-start gap-2"><h1 class="text-base font-black text-slate-100">${esc(t.name)}</h1><span class="badge bg-volt/15 text-volt text-[10px]">আসন্ন</span></div>
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-3 rounded-xl">
+        <div><div class="text-[11px] text-slate-400">এন্ট্রি ফি:</div><div class="text-base font-black text-volt">৳${t.fee||0}</div></div>
+        <div><div class="text-[11px] text-slate-400">উইনিং প্রাইজ:</div><div class="text-base font-black text-gold">৳${t.winnerPrize||0}</div></div>
       </div>
-      <div class="bg-slate-900/80 p-3 rounded-xl text-xs space-y-1">
+      <div class="bg-slate-900/80 p-2.5 rounded-xl text-xs space-y-1">
         <div>🥇 Winner: <b>৳${t.winnerPrize||0}</b></div>
         <div>🥈 Runner-up: <b>৳${t.runnerUpPrize||0}</b></div>
       </div>
-      ${!me&&!full?`<button data-act="join" class="btn btn-n w-full py-3 font-bold text-base">টুর্নামেন্ট জয়েন করুন</button>`:''}
-      ${me?`<div class="rounded-xl bg-neon/10 p-3 text-center text-neon font-bold text-sm">✔ আপনি সফলভাবে জয়েন করেছেন</div>`:''}
+      ${!me&&!full?`<button data-act="join" class="btn btn-n w-full py-2.5 font-bold text-xs">টুর্নামেন্ট জয়েন করুন</button>`:''}
+      ${me?`<div class="rounded-xl bg-neon/10 p-2.5 text-center text-neon font-bold text-xs">✔ আপনি সফলভাবে জয়েন করেছেন</div>`:''}
     </div>
-    <div class="glass rounded-2xl p-4 space-y-2">
-      <div class="font-bold text-slate-100 text-sm">জয়েন করা টিমসমূহ (${n}):</div>
-      <div class="flex flex-wrap gap-2">${t.players.map(p=>`<span class="badge bg-white/10 text-slate-200 px-3 py-1.5">${esc(p.team)}</span>`).join('')||`<span class="text-xs text-slate-400">এখনো কেউ জয়েন করেনি।</span>`}</div>
+    <div class="glass rounded-2xl p-3.5 space-y-2">
+      <div class="font-bold text-slate-100 text-xs">জয়েন করা টিমসমূহ (${n}):</div>
+      <div class="flex flex-wrap gap-1.5">${t.players.map(p=>`<span class="badge bg-white/10 text-slate-200 px-2.5 py-1 text-xs">${esc(p.team)}</span>`).join('')||`<span class="text-xs text-slate-400">এখনো কেউ জয়েন করেনি।</span>`}</div>
     </div>
   </div>`);
   icons();
@@ -242,27 +248,27 @@ actions.join=async()=>{
 
 function historyView(){
   if(!needAuth())return;
-  setView(`<div class="space-y-4 p-4 max-w-xl mx-auto"><h1 class="text-xl font-black text-slate-100">হিস্টরি</h1><div class="glass rounded-2xl p-6 text-center text-sm text-slate-300">কোনো হিস্টরি নেই।</div></div>`);
+  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-20"><h1 class="text-base font-black text-slate-100">হিস্টরি</h1><div class="glass rounded-2xl p-6 text-center text-xs text-slate-300">কোনো হিস্টরি নেই।</div></div>`);
   icons();
 }
 
 function profileView(){
-  if(!user){setView(`<p class="p-8 text-center">লগইন করুন</p>`);return}
+  if(!user){setView(`<p class="p-8 text-center text-xs">লগইন করুন</p>`);return}
   const p=profile||{};
-  setView(`<div class="space-y-5 p-4 max-w-xl mx-auto">
-    <form id="pf" class="glass rounded-3xl p-6 space-y-4">
-      <h1 class="text-2xl font-black text-slate-100">প্রোফাইল (বাধ্যতামূলক তথ্য)</h1>
-      <div><label class="lbl">টিম নেম <span class="text-red-400">*</span></label><input class="inp text-slate-100" name="team" required value="${esc(p.team||'')}"></div>
-      <div><label class="lbl">মোবাইল নম্বর <span class="text-red-400">*</span></label><input class="inp text-slate-100" name="phone" required type="tel" value="${esc(p.phone||'')}"></div>
+  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-20">
+    <form id="pf" class="glass rounded-2xl p-4 space-y-3">
+      <h1 class="text-lg font-black text-slate-100">প্রোফাইল (বাধ্যতামূলক তথ্য)</h1>
+      <div><label class="lbl text-xs">টিম নেম <span class="text-red-400">*</span></label><input class="inp text-sm" name="team" required value="${esc(p.team||'')}"></div>
+      <div><label class="lbl text-xs">মোবাইল নম্বর <span class="text-red-400">*</span></label><input class="inp text-sm" name="phone" required type="tel" value="${esc(p.phone||'')}"></div>
       <div>
-        <label class="lbl">প্রোফাইল পিকচার (Choose File) <span class="text-red-400">*</span></label>
-        <input class="inp file:mr-3 file:rounded-lg file:border-0 file:bg-volt file:px-3 file:py-1.5 file:text-xs file:font-bold" id="imgFile" type="file" accept="image/*">
+        <label class="lbl text-xs">প্রোফাইল পিকচার (Choose File) <span class="text-red-400">*</span></label>
+        <input class="inp text-xs file:mr-2 file:rounded-md file:border-0 file:bg-volt file:px-2.5 file:py-1 file:text-xs file:font-bold" id="imgFile" type="file" accept="image/*">
         <input type="hidden" name="avatar" id="avatarVal" value="${esc(p.avatar||'')}">
       </div>
-      ${p.avatar?`<div class="flex items-center gap-3"><img src="${esc(p.avatar)}" class="h-12 w-12 rounded-full object-cover border border-volt/40"><span class="text-xs text-slate-400">বর্তমান ছবি</span></div>`:''}
-      <button class="btn btn-p w-full py-3 font-bold">প্রোফাইল সেভ করুন</button>
+      ${p.avatar?`<div class="flex items-center gap-2.5"><img src="${esc(p.avatar)}" class="h-10 w-10 rounded-full object-cover border border-volt/40"><span class="text-[11px] text-slate-400">বর্তমান ছবি</span></div>`:''}
+      <button class="btn btn-p w-full py-2.5 text-xs font-bold">প্রোফাইল সেভ করুন</button>
     </form>
-    <button data-act="logout" class="btn btn-g w-full py-3 text-red-400 font-semibold">লগআউট</button>
+    <button data-act="logout" class="btn btn-g w-full py-2.5 text-xs text-red-400 font-semibold">লগআউট</button>
   </div>`);
 
   $('#imgFile').onchange=e=>{
@@ -299,26 +305,26 @@ actions.logout=async()=>{await F.signOut(auth);location.hash='#/'};
 
 function adminView(){
   if(!user || user.email !== ADMIN_EMAIL){
-    setView(`<div class="p-12 text-center text-red-400 font-bold">404 - Unauthorized Access!</div>`);
+    setView(`<div class="p-12 text-center text-red-400 font-bold text-xs">404 - Unauthorized Access!</div>`);
     return;
   }
-  setView(`<div class="space-y-6 p-4 max-w-2xl mx-auto">
-    <h1 class="text-2xl font-black text-slate-100">অ্যাডমিন কন্ট্রোল প্যানেল (/admin)</h1>
+  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-20">
+    <h1 class="text-lg font-black text-slate-100">অ্যাডমিন কন্ট্রোল প্যানেল (/admin)</h1>
     
-    <div class="glass rounded-3xl p-5 space-y-3 border border-volt/40">
-      <h2 class="font-bold text-volt text-lg">নতুন টুর্নামেন্ট তৈরি করুন</h2>
-      <form id="mkTourney" class="space-y-3">
-        <div><label class="lbl">টুর্নামেন্টের নাম</label><input class="inp" name="name" required placeholder="Friday Night Cup"></div>
+    <div class="glass rounded-2xl p-4 space-y-3 border border-volt/40">
+      <h2 class="font-bold text-volt text-sm">নতুন টুর্নামেন্ট তৈরি করুন</h2>
+      <form id="mkTourney" class="space-y-2.5">
+        <div><label class="lbl text-xs">টুর্নামেন্টের নাম</label><input class="inp text-sm" name="name" required placeholder="Friday Night Cup"></div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="lbl">এন্ট্রি ফি (৳)</label><input class="inp" name="fee" type="number" value="50" required></div>
-          <div><label class="lbl">সর্বোচ্চ স্লট</label><select class="inp" name="max"><option value="2">2 Slots</option><option value="4">4 Slots</option><option value="8">8 Slots</option><option value="16">16 Slots</option></select></div>
+          <div><label class="lbl text-xs">এন্ট্রি ফি (৳)</label><input class="inp text-sm" name="fee" type="number" value="50" required></div>
+          <div><label class="lbl text-xs">সর্বোচ্চ স্লট</label><select class="inp text-sm" name="max"><option value="2">2 Slots</option><option value="4">4 Slots</option><option value="8">8 Slots</option><option value="16">16 Slots</option></select></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="lbl">Winner Prize (৳)</label><input class="inp" name="winnerPrize" type="number" value="80" required></div>
-          <div><label class="lbl">Runner-up Prize (৳)</label><input class="inp" name="runnerUpPrize" type="number" value="20" required></div>
+          <div><label class="lbl text-xs">Winner Prize (৳)</label><input class="inp text-sm" name="winnerPrize" type="number" value="80" required></div>
+          <div><label class="lbl text-xs">Runner-up Prize (৳)</label><input class="inp text-sm" name="runnerUpPrize" type="number" value="20" required></div>
         </div>
-        <div><label class="lbl">শুরুর সময়</label><input class="inp" name="start" type="datetime-local" required></div>
-        <button class="btn btn-p w-full py-3 font-bold">টুর্নামেন্ট পাবলিশ করুন</button>
+        <div><label class="lbl text-xs">শুরুর সময়</label><input class="inp text-sm" name="start" type="datetime-local" required></div>
+        <button class="btn btn-p w-full py-2.5 text-xs font-bold">টুর্নামেন্ট পাবলিশ করুন</button>
       </form>
     </div>
   </div>`);

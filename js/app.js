@@ -4,7 +4,7 @@ import {$,esc,money,icons,skeleton,toast,modal} from './ui.js';
 const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'open',list:[],q:''};
 
-const ADMIN_EMAIL = 'admin@dls.com'; // Apnar admin email ekhane thakbe
+const ADMIN_EMAIL = 'theshabbirtech@gmail.com'; // Apnar admin email ekhane thakbe
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;

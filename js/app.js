@@ -305,7 +305,22 @@ function historyView(){
 }
 
 function profileView(){
-  if(!user){setView(`<p class="p-8 text-center text-xs">লগইন করুন</p>`);return}
+  if(!user){
+    setView(`<div class="space-y-6 py-12 max-w-md mx-auto px-4 text-center">
+      <div class="glass rounded-3xl p-6 space-y-4 border border-volt/20 shadow-xl">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-volt/15 text-volt">
+          <i data-lucide="user-round" class="h-7 w-7"></i>
+        </div>
+        <div class="space-y-1">
+          <h2 class="text-base font-bold text-slate-100">প্রোফাইল দেখতে লগইন করুন</h2>
+          <p class="text-xs text-slate-400">আপনার একাউন্টে প্রবেশ করতে নিচের বাটনে ক্লিক করুন।</p>
+        </div>
+        <button data-act="auth" class="btn btn-p w-full py-3 text-xs font-bold shadow-lg shadow-volt/20">লগইন / প্রবেশ করুন</button>
+      </div>
+    </div>`);
+    icons();
+    return;
+  }
   const p=profile||{};
   setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
     <form id="pf" class="glass rounded-2xl p-4 space-y-3">
@@ -375,7 +390,7 @@ function adminView(){
           <div><label class="lbl text-xs">সর্বোচ্চ স্লট</label><select class="inp text-sm" name="max"><option value="2">2 Slots</option><option value="4">4 Slots</option><option value="8">8 Slots</option><option value="16">16 Slots</option></select></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="lbl text-xs">ফরম্যাট / টাইপ</label><select class="inp text-sm" name="type"><option value="Knockout">Knockout</option><option value="Group Stage">Group Stage</option></select></div>
+          <div><label class="lbl text-xs">ফরম্যাট / টাইপ</label><select class="inp state-sm" name="type"><option value="Knockout">Knockout</option><option value="Group Stage">Group Stage</option></select></div>
           <div><label class="lbl text-xs">শুরুর সময়</label><input class="inp text-sm" name="start" type="datetime-local" required></div>
         </div>
         <div class="grid grid-cols-2 gap-2">

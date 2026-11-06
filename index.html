@@ -16,11 +16,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
-/* Colour roles (so the page stops feeling noisy):
-   volt (cyan)  = brand + the ONE primary action on a screen
-   neon (green) = success / confirmed / join
-   gold         = money and prizes only
-   red          = danger / dispute only                                   */
 tailwind.config={theme:{extend:{
   colors:{ink:'#0A0F1F',panel:'#131A2E',volt:'#22D3EE',neon:'#34D399',gold:'#FBBF24',
     slate:{200:'#E2E8F4',300:'#D0D8E8',400:'#AAB6CC',500:'#8592AA'}},
@@ -42,12 +37,11 @@ tailwind.config={theme:{extend:{
  .lbl{@apply mb-1.5 block text-sm font-medium text-slate-200}
 }
 html{font-size:17px;color-scheme:dark}
-html,body{background:#0A0F1F}
+html,body{background:#0A0F1F; overflow-x:hidden;}
 body{line-height:1.7;-webkit-font-smoothing:antialiased;
   background-image:radial-gradient(55rem 26rem at 50% -8%,rgba(34,211,238,.13),transparent),radial-gradient(34rem 18rem at 100% 0%,rgba(52,211,153,.06),transparent);background-attachment:fixed}
-/* arbitrary tiny sizes used in app.js: lift them to a readable minimum */
 .text-\[11px\],.text-\[10px\]{font-size:.8rem!important;line-height:1.25rem!important}
-.uppercase{text-transform:none!important;letter-spacing:0!important} /* Bangla has no capitals */
+.uppercase{text-transform:none!important;letter-spacing:0!important}
 details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
 details>summary::after{content:'+';float:right;color:#22D3EE;font-weight:700}details[open]>summary::after{content:'–'}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #22D3EE;outline-offset:2px;border-radius:.5rem}
@@ -56,12 +50,17 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #22
 </head>
 <body class="min-h-screen font-sans text-slate-100 antialiased">
 <header class="sticky top-0 z-40 border-b border-white/10 bg-ink/90 backdrop-blur-md" style="padding-top:env(safe-area-inset-top)">
-  <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-    <a href="#/" class="flex items-center gap-2 text-lg font-bold tracking-tight"><span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-volt to-neon text-ink"><i data-lucide="trophy" class="h-4 w-4"></i></span>DLS <span class="text-volt">Tournament Hub</span></a>
-    <div id="hdr"></div>
+  <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-3">
+    <a href="#/" class="flex items-center gap-1.5 text-base font-bold tracking-tight min-w-0">
+      <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-volt to-neon text-ink">
+        <i data-lucide="trophy" class="h-3.5 w-3.5"></i>
+      </span>
+      <span class="truncate">DLS <span class="text-volt">Hub</span></span>
+    </a>
+    <div id="hdr" class="shrink-0 flex items-center gap-2"></div>
   </div>
 </header>
-<main id="app" class="mx-auto max-w-3xl pb-28"></main>
+<main id="app" class="mx-auto max-w-3xl px-3 pb-28"></main>
 <nav id="nav" class="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink/95 backdrop-blur-md" style="padding-bottom:env(safe-area-inset-bottom)"></nav>
 <script type="module" src="js/app.js"></script>
 <script type="module" src="js/install.js"></script>

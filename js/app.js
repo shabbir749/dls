@@ -10,7 +10,7 @@ const ADMIN_EMAIL = 'theshabbirtech@gmail.com';
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;
 const fdate=s=>s?new Date(s).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'}):'নির্ধারিত নয়';
-const countdown=s=>{if(!s)return '';const ms=new Date(s)-Date.now();return isNaN(ms)?'':ms<=0?'শীঘ্রই শুরু হচ্ছে':`শুরু হবে ${Math.floor(ms/60000)}মি এ`;};
+const countdown=s=>{if(!s)return '';const ms=new Date(s)-Date.now();return isNaN(ms)?'':ms<=0?'शीঘ্রই শুরু হচ্ছে':`শুরু হবে ${Math.floor(ms/60000)}মি এ`;};
 const run=async(fn,ok)=>{try{await fn();if(ok)toast(ok);return true}catch(e){toast(e.message,'err');return false}};
 const setView=h=>{app.innerHTML=h;icons()};
 const needAuth=()=>{if(user)return true;authModal();return false};
@@ -46,7 +46,7 @@ function authModal(){
   <button class="btn btn-p w-full" id="go">প্রবেশ করুন</button></form>
   <button id="sw" class="mt-3 w-full text-center text-xs text-volt font-semibold">নতুন একাউন্ট খুলতে চান? রেজিস্টার করুন</button>`);
   m.$('#g').onclick=async()=>{try{await F.signInWithPopup(auth,new F.GoogleAuthProvider());m.close()}catch(e){toast(e.message,'err')}};
-  m.$('#sw').onclick=()=>{mode=mode==='in'?'up':'in';m.$('#go').textContent=mode==='in'?'প্রবেশ করুন':'একাউন্ট তৈরি করুন';m.$('#sw').textContent=mode==='in'?'নতুন একাউন্ট খুলতে চান? রেজিস্টার করুন':'আগে থেকেই একাউন্ট আছে? প্রবেশ করুন'};
+  m.$('#sw').onclick=()=>{mode=mode==='in'?'up':'in';m.$('#go').textContent=mode==='in'?'প্রবেশ করুন':'একাউন্ট তৈরি করুন';m.$('#sw').textContent=mode==='in'?'নতুন একাউন্ট খুলতে চান? রেজিস্টার করুন':'আগে থেকেই আছে? প্রবেশ করুন'};
   m.$('#f').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
     try{await(mode==='in'?F.signInWithEmailAndPassword:F.createUserWithEmailAndPassword)(auth,d.email,d.password);m.close()}catch(err){toast(err.message.replace('Firebase: ',''),'err')}};
 }
@@ -251,16 +251,19 @@ function drawT(){
 }
 
 function matchView(tid, r, i){
-  unsub=F.onSnapshot(tref(tid),s=>{
+  unsub=F.onSnapshot(tref(tid),async s=>{
     if(!s.exists())return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ পাওয়া যায়নি</p>`);
     T={id:s.id, ...s.data()};
     const m = T.rounds?.['r'+r]?.[i];
     if(!m) return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ ডেটা ভুল</p>`);
+
+    const isAdmin = user && user.email === ADMIN_EMAIL;
+    const isPlayer = user && (m.a?.uid === user.uid || m.b?.uid === user.uid);
     
     setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
       <a href="#/t/${tid}" class="inline-flex items-center gap-1 text-xs text-volt font-medium"><i data-lucide="chevron-left" class="h-4 w-4"></i>টুর্নামেন্টে ফিরে যান</a>
       <div class="glass rounded-2xl p-5 space-y-4 text-center">
-        <h1 class="text-sm font-bold text-volt uppercase tracking-wider">DLS Match Screen</h1>
+        <h1 class="text-sm font-bold text-volt uppercase tracking-wider">DLS Match Room & Code Sharing</h1>
         <div class="grid grid-cols-2 gap-4 items-center bg-slate-900/80 p-4 rounded-xl border border-white/10">
           <div>
             <div class="font-bold text-sm text-slate-100">${esc(m.a?.team||'TBD')}</div>
@@ -271,13 +274,103 @@ function matchView(tid, r, i){
             <div class="text-[11px] text-slate-400">Team B</div>
           </div>
         </div>
-        <div class="rounded-xl bg-slate-900 p-3 border border-volt/30 space-y-1.5 text-left text-xs">
-          <div class="font-bold text-volt">DLS Friend Code / Room Code (5 Min Active):</div>
-          <p class="text-slate-300">${m.room ? esc(m.room) : 'এখনো কোড দেওয়া হয়নি'}</p>
+
+        <div class="rounded-xl bg-slate-900 p-3.5 border border-volt/30 space-y-2 text-left text-xs">
+          <div class="font-bold text-volt flex items-center justify-between">
+            <span>DLS Friend Code / Room Code (5 Min):</span>
+            <span class="text-slate-400 text-[11px]">Status: ${m.status}</span>
+          </div>
+          <div class="text-slate-200 font-mono text-sm bg-black/40 p-2 rounded-lg">${m.room ? esc(m.room) : 'কোনো কোড দেওয়া হয়নি'}</div>
+          
+          ${isPlayer && m.status!=='done' ? `
+            <div class="pt-2 flex gap-2">
+              <input id="roomInput" class="inp text-xs !py-2" placeholder="আপনার রুম কোড দিন (যেমন: 12345)" value="${esc(m.room||'')}">
+              <button id="saveRoomBtn" class="btn btn-n !py-2 !px-3 text-xs shrink-0 font-bold">সেভ কোড</button>
+            </div>
+          ` : ''}
         </div>
+
+        <div class="rounded-xl bg-slate-900 p-3.5 border border-white/10 space-y-2 text-left text-xs">
+          <div class="font-bold text-gold">ম্যাচ রেজাল্ট ও স্ক্রিনশট (Proof):</div>
+          <div>স্কোর: <b>${m.sa ?? '-'}</b> : <b>${m.sb ?? '-'}</b></div>
+          ${m.proof ? `<a href="${esc(m.proof)}" target="_blank" class="text-volt underline block truncate">দিস্ছে স্ক্রিনশট লিংক (View Proof)</a>` : '<div class="text-slate-400 text-[11px]">কোনো স্ক্রিনশট সাবমিট করা হয়নি।</div>'}
+          
+          ${isPlayer && m.status!=='done' ? `
+            <div class="space-y-2 pt-2 border-t border-white/10">
+              <div class="grid grid-cols-2 gap-2">
+                <input id="saInp" class="inp text-xs !py-2" type="number" placeholder="আপনার গোল" value="${m.sa??''}">
+                <input id="sbInp" class="inp text-xs !py-2" type="number" placeholder="প্রতিপক্ষের গোল" value="${m.sb??''}">
+              </div>
+              <input id="proofInp" class="inp text-xs !py-2" placeholder="স্ক্রিনশট ইমেজ লিংক (Image URL / ImgBB)" value="${esc(m.proof||'')}">
+              <button id="submitResBtn" class="btn btn-p w-full py-2 text-xs font-bold">রেজাল্ট ও প্রুফ জমা দিন</button>
+            </div>
+          ` : ''}
+        </div>
+
+        ${isAdmin ? `
+          <div class="rounded-xl bg-slate-950 p-4 border border-volt/40 space-y-3 text-left text-xs">
+            <div class="font-bold text-volt">অ্যাডমিন ম্যাচ কন্ট্রোল:</div>
+            <div class="space-y-1">
+              <label class="lbl text-[11px]">জয়ী দল সিলেক্ট করুন:</label>
+              <select id="winnerSelect" class="inp text-xs !py-2">
+                <option value="">-- উইনার সিলেক্ট করুন --</option>
+                <option value="${m.a?.uid}" ${m.winner===m.a?.uid?'selected':''}>${esc(m.a?.team||'Team A')}</option>
+                <option value="${m.b?.uid}" ${m.winner===m.b?.uid?'selected':''}>${esc(m.b?.team||'Team B')}</option>
+              </select>
+            </div>
+            <button id="adminWinBtn" class="btn btn-n w-full py-2 text-xs font-bold">উইনার কনফার্ম ও নেক্সট রাউন্ডে পাঠান</button>
+          </div>
+        ` : ''}
+
       </div>
     </div>`);
     icons();
+
+    if(isPlayer && $('#saveRoomBtn')){
+      $('#saveRoomBtn').onclick=async()=>{
+        const room = $('#roomInput').value.trim();
+        if(!room) return toast('রুম কোড লিখুন','err');
+        m.room = room;
+        T.rounds['r'+r][i] = m;
+        await F.updateDoc(tref(tid), { rounds: T.rounds });
+        toast('রুম কোড সফলভাবে আপডেট হয়েছে!');
+      };
+    }
+
+    if(isPlayer && $('#submitResBtn')){
+      $('#submitResBtn').onclick=async()=>{
+        const sa = +$('#saInp').value, sb = +$('#sbInp').value;
+        const proof = $('#proofInp').value.trim();
+        m.sa = sa; m.sb = sb; m.proof = proof; m.status = 'disputed';
+        T.rounds['r'+r][i] = m;
+        await F.updateDoc(tref(tid), { rounds: T.rounds });
+        toast('রেজাল্ট ও প্রুফ সফলভাবে জমা হয়েছে!');
+      };
+    }
+
+    if(isAdmin && $('#adminWinBtn')){
+      $('#adminWinBtn').onclick=async()=>{
+        const winnerUid = $('#winnerSelect').value;
+        if(!winnerUid) return toast('সঠিক উইনার সিলেক্ট করুন','err');
+        const winnerTeam = winnerUid === m.a?.uid ? m.a : m.b;
+        m.winner = winnerUid;
+        m.status = 'done';
+        advance(T.rounds, +r, +i, winnerTeam);
+        T.rounds['r'+r][i] = m;
+        
+        // If final round, give prize to winner!
+        if(+r === Object.keys(T.rounds).length - 1){
+          const uDoc = await F.getDoc(F.doc(db, 'users', winnerUid));
+          if(uDoc.exists()){
+            const curWinBal = uDoc.data().winBalance || 0;
+            await F.updateDoc(F.doc(db, 'users', winnerUid), { winBalance: curWinBal + (T.winnerPrize || 0) });
+          }
+        }
+
+        await F.updateDoc(tref(tid), { rounds: T.rounds });
+        toast('উইনার সফলভাবে কনফার্ম করা হয়েছে!');
+      };
+    }
   });
 }
 
@@ -378,9 +471,11 @@ function adminView(){
     setView(`<div class="p-12 text-center text-red-400 font-bold text-xs">404 - Unauthorized Access!</div>`);
     return;
   }
-  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
+
+  setView(`<div class="space-y-6 py-4 max-w-xl mx-auto pb-24">
     <h1 class="text-lg font-black text-slate-100">অ্যাডমিন কন্ট্রোল প্যানেল (/admin)</h1>
     
+    <!-- Tourney Creator -->
     <div class="glass rounded-2xl p-4 space-y-3 border border-volt/40">
       <h2 class="font-bold text-volt text-sm">নতুন টুর্নামেন্ট তৈরি করুন</h2>
       <form id="mkTourney" class="space-y-2.5">
@@ -390,7 +485,7 @@ function adminView(){
           <div><label class="lbl text-xs">সর্বোচ্চ স্লট</label><select class="inp text-sm" name="max"><option value="2">2 Slots</option><option value="4">4 Slots</option><option value="8">8 Slots</option><option value="16">16 Slots</option></select></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="lbl text-xs">ফরম্যাট / টাইপ</label><select class="inp state-sm" name="type"><option value="Knockout">Knockout</option><option value="Group Stage">Group Stage</option></select></div>
+          <div><label class="lbl text-xs">ফরম্যাট / টাইপ</label><select class="inp text-sm" name="type"><option value="Knockout">Knockout</option><option value="Group Stage">Group Stage</option></select></div>
           <div><label class="lbl text-xs">শুরুর সময়</label><input class="inp text-sm" name="start" type="datetime-local" required></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
@@ -400,7 +495,56 @@ function adminView(){
         <button class="btn btn-p w-full py-2.5 text-xs font-bold">টুর্নামেন্ট পাবলিশ করুন</button>
       </form>
     </div>
+
+    <!-- Admin Deposit & Withdraw Requests Box -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="glass rounded-2xl p-4 space-y-3 border border-neon/30">
+        <h2 class="font-bold text-neon text-xs flex items-center gap-1.5"><i data-lucide="wallet" class="h-4 w-4"></i>এড মানি রিকোয়েস্টসমূহ</h2>
+        <div id="depList" class="space-y-2 text-xs">লোড হচ্ছে...</div>
+      </div>
+
+      <div class="glass rounded-2xl p-4 space-y-3 border border-gold/30">
+        <h2 class="font-bold text-gold text-xs flex items-center gap-1.5"><i data-lucide="send" class="h-4 w-4"></i>উইথড্র রিকোয়েস্টসমূহ</h2>
+        <div id="withList" class="space-y-2 text-xs">লোড হচ্ছে...</div>
+      </div>
+    </div>
   </div>`);
+
+  icons();
+
+  // Fetch Deposits
+  F.getDocs(F.collection(db, 'deposits')).then(snap=>{
+    const list = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const pending = list.filter(x=>x.status==='pending');
+    const el = $('#depList');
+    if(!el) return;
+    el.innerHTML = pending.map(d=>`
+      <div class="bg-slate-900 p-2.5 rounded-xl border border-white/5 space-y-1">
+        <div>টিম: <b>${esc(d.team)}</b></div>
+        <div>পরিমাণ: <span class="text-volt font-bold">৳${d.amount}</span></div>
+        <div>TrxID: <span class="font-mono text-gold">${esc(d.trx)}</span></div>
+        <button data-approve-dep="${d.id}" data-uid="${d.uid}" data-amount="${d.amount}" class="btn btn-n !py-1 !px-3 text-[11px] font-bold w-full mt-1">অ্যাপ্রুভ করুন</button>
+      </div>
+    `).join('') || '<div class="text-slate-400">কোনো পেন্ডিং ডিপোজিট নেই।</div>';
+    icons();
+  });
+
+  // Fetch Withdraws
+  F.getDocs(F.collection(db, 'withdraws')).then(snap=>{
+    const list = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const pending = list.filter(x=>x.status==='pending');
+    const el = $('#withList');
+    if(!el) return;
+    el.innerHTML = pending.map(w=>`
+      <div class="bg-slate-900 p-2.5 rounded-xl border border-white/5 space-y-1">
+        <div>টিম: <b>${esc(w.team)}</b></div>
+        <div>নম্বর: <span class="text-volt font-bold">${esc(w.phone)}</span></div>
+        <div>পরিমাণ: <span class="text-gold font-bold">৳${w.amount}</span></div>
+        <button data-approve-with="${w.id}" data-uid="${w.uid}" data-amount="${w.amount}" class="btn btn-p !py-1 !px-3 text-[11px] font-bold w-full mt-1">উইথড্র পেইড করুন</button>
+      </div>
+    `).join('') || '<div class="text-slate-400">কোনো পেন্ডিং উইথড্র নেই।</div>';
+    icons();
+  });
 
   $('#mkTourney').onsubmit=async e=>{
     e.preventDefault();
@@ -423,3 +567,36 @@ function adminView(){
     } catch(err){toast(err.message,'err')}
   };
 }
+
+// Admin Action Listeners for Deposits & Withdraws Approval
+document.addEventListener('click', async e=>{
+  const depBtn = e.target.closest('[data-approve-dep]');
+  if(depBtn){
+    const id = depBtn.dataset.approveDep, uid = depBtn.dataset.uid, amount = +depBtn.dataset.amount;
+    try {
+      await F.updateDoc(F.doc(db, 'deposits', id), { status: 'accepted' });
+      const uRef = F.doc(db, 'users', uid);
+      const uDoc = await F.getDoc(uRef);
+      const curBal = uDoc.exists() ? (uDoc.data().balance || 0) : 0;
+      await F.updateDoc(uRef, { balance: curBal + amount });
+      toast('ডিপোজিট সফলভাবে অ্যাপ্রুভ হয়েছে এবং ব্যালেন্স যোগ হয়েছে!');
+      adminView();
+    } catch(err){toast(err.message,'err')}
+  }
+
+  const withBtn = e.target.closest('[data-approve-with]');
+  if(withBtn){
+    const id = withBtn.dataset.approveWith, uid = withBtn.dataset.uid, amount = +withBtn.dataset.amount;
+    try {
+      await F.updateDoc(F.doc(db, 'withdraws', id), { status: 'accepted' });
+      const uRef = F.doc(db, 'users', uid);
+      const uDoc = await F.getDoc(uRef);
+      const curWinBal = uDoc.exists() ? (uDoc.data().winBalance || 0) : 0;
+      if(curWinBal >= amount){
+        await F.updateDoc(uRef, { winBalance: curWinBal - amount });
+      }
+      toast('উইথড্র সফলভাবে পেইড ও কমপ্লিট করা হয়েছে!');
+      adminView();
+    } catch(err){toast(err.message,'err')}
+  }
+});

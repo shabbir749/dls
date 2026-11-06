@@ -4,7 +4,7 @@ import {$,esc,money,icons,skeleton,toast,modal} from './ui.js';
 const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'open',list:[],q:''};
 
-const ADMIN_EMAIL = 'theshabbirtech@gmail.com'; // Apnar admin email set kora hoyeche
+const ADMIN_EMAIL = 'theshabbirtech@gmail.com';
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;
@@ -79,7 +79,6 @@ function drawFeed(){
     <h1 class="text-xl font-black text-slate-100 flex items-center gap-2"><i data-lucide="zap" class="h-5 w-5 text-volt"></i>চলমান ও আসন্ন টুর্নামেন্টসমূহ</h1>
     <div id="fl" class="space-y-4"></div>
     
-    <!-- Tournament Join Rules & FAQ Section -->
     <div class="glass rounded-3xl p-5 space-y-3 border border-volt/30">
       <h2 class="font-bold text-volt text-base flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5"></i>টুর্নামেন্টে জয়েন করার নিয়ম ও নির্দেশাবলী (FAQ)</h2>
       <div class="space-y-2 text-xs text-slate-300">
@@ -145,7 +144,6 @@ const actions={
     const m=modal(`<div class="space-y-4">
       <h3 class="text-lg font-bold text-slate-100 border-b border-white/10 pb-2">টাকা এড করুন</h3>
       
-      <!-- Dedicated Big Number Section with Copy Button -->
       <div class="rounded-2xl bg-slate-900 p-4 border border-volt/40 text-center space-y-2">
         <div class="text-xs text-slate-400 font-medium">অফিশিয়াল বিকাশ/নগদ পার্সোনাল নম্বর</div>
         <div class="text-2xl font-black text-volt tracking-wider select-all" id="copyNum">01878254585</div>

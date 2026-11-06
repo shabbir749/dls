@@ -1,5 +1,5 @@
 // DLS Tournament Hub service worker. Bump VERSION after every deploy to refresh the cache.
-const VERSION='v1.4';
+const VERSION='v1.5';
 const CACHE='dls-hub-'+VERSION;
 const SHELL=['./','./index.html','./manifest.json','./launchericon-192x192.png','./launchericon-512x512.png',
   './js/app.js','./js/bracket.js','./js/firebase.js','./js/ui.js','./js/i18n.js'];

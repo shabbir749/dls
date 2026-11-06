@@ -24,9 +24,9 @@ F.onAuthStateChanged(auth,async u=>{
 
 function header(){
   const bal = profile?.balance || 0;
-  $('#hdr').innerHTML=`<div class="flex items-center gap-2">
-    <a href="#/wallet" class="glass px-3.5 py-1 rounded-full text-xs font-bold text-gold border border-gold/30 hover:border-gold transition cursor-pointer whitespace-nowrap">My Balance: ৳${bal}</a>
-    ${user?`<a href="#/me" class="flex items-center gap-1.5 rounded-full bg-white/10 py-0.5 pl-1 pr-2.5 text-xs font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-6 w-6 rounded-full object-cover"><span class="max-w-[4.5rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-2.5 text-xs">লগইন</button>`}
+  $('#hdr').innerHTML=`<div class="flex items-center gap-1.5 shrink-0">
+    <a href="#/wallet" class="glass px-2.5 py-1 rounded-full text-[11px] font-bold text-gold border border-gold/30 hover:border-gold transition whitespace-nowrap">Bal: ৳${bal}</a>
+    ${user?`<a href="#/me" class="flex items-center gap-1 rounded-full bg-white/10 py-0.5 pl-1 pr-2 text-[11px] font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-5 w-5 rounded-full object-cover"><span class="max-w-[4rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-2 text-[11px]">লগইন</button>`}
   </div>`;
   icons();
 }
@@ -70,7 +70,7 @@ addEventListener('hashchange',route);
 nav();
 
 function drawFeed(){
-  setView(`<div class="space-y-5 px-3 py-4 max-w-xl mx-auto pb-24">
+  setView(`<div class="space-y-5 py-4 max-w-xl mx-auto pb-24">
     <h1 class="text-base font-black text-slate-100 flex items-center gap-1.5"><i data-lucide="zap" class="h-4 w-4 text-volt"></i>চলমান ও আসন্ন টুর্নামেন্টসমূহ</h1>
     <div id="fl" class="space-y-3.5"></div>
     
@@ -114,7 +114,7 @@ function drawList(){
 function walletView(){
   if(!needAuth())return;
   const bal = profile?.balance || 0, winBal = profile?.winBalance || 0;
-  setView(`<div class="space-y-5 px-3 py-4 max-w-xl mx-auto pb-24">
+  setView(`<div class="space-y-5 py-4 max-w-xl mx-auto pb-24">
     <div class="glass rounded-3xl p-5 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-gold/30">
       <div class="text-xs text-slate-400 font-medium">আমার ওয়ালেট একাউন্ট</div>
       <div class="grid grid-cols-2 gap-3.5 mt-3">
@@ -201,7 +201,7 @@ function drawT(){
   const n=(t.players||[]).length;
   const isAdmin = user && user.email === ADMIN_EMAIL;
 
-  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-24">
+  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
     <a href="#/" class="inline-flex items-center gap-1 text-xs text-volt font-medium"><i data-lucide="chevron-left" class="h-4 w-4"></i>ফিরে যান</a>
     <div class="glass rounded-3xl p-5 space-y-4 border border-white/10">
       <div class="flex justify-between items-start gap-2"><h1 class="text-base font-black text-slate-100">${esc(t.name)}</h1><span class="badge bg-volt/15 text-volt text-xs">${t.type || 'Knockout'}</span></div>
@@ -217,7 +217,6 @@ function drawT(){
       ${me?`<div class="rounded-xl bg-neon/10 p-3 text-center text-neon font-bold text-xs">✔ আপনি সফলভাবে জয়েন করেছেন</div>`:''}
     </div>
 
-    <!-- Dynamic Tournament Bracket / Matches Section -->
     <div class="glass rounded-2xl p-4 space-y-3">
       <h2 class="font-bold text-slate-100 text-xs flex items-center gap-1.5"><i data-lucide="swords" class="h-4 w-4 text-volt"></i>ম্যাচ ব্র্যাকেট ও ফিকচার</h2>
       ${t.rounds ? renderBracket(t, uid) : `<p class="text-xs text-slate-400">স্লট পূর্ণ হওয়ার পর অ্যাডমিন ব্র্যাকেট জেনারেট করবেন।</p>`}
@@ -258,7 +257,7 @@ function matchView(tid, r, i){
     const m = T.rounds?.['r'+r]?.[i];
     if(!m) return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ ডেটা ভুল</p>`);
     
-    setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-24">
+    setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
       <a href="#/t/${tid}" class="inline-flex items-center gap-1 text-xs text-volt font-medium"><i data-lucide="chevron-left" class="h-4 w-4"></i>টুর্নামেন্টে ফিরে যান</a>
       <div class="glass rounded-2xl p-5 space-y-4 text-center">
         <h1 class="text-sm font-bold text-volt uppercase tracking-wider">DLS Match Screen</h1>
@@ -301,14 +300,14 @@ actions.join=async()=>{
 
 function historyView(){
   if(!needAuth())return;
-  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-24"><h1 class="text-base font-black text-slate-100">হিস্টরি</h1><div class="glass rounded-2xl p-6 text-center text-xs text-slate-300">কোনো হিস্টরি নেই।</div></div>`);
+  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24"><h1 class="text-base font-black text-slate-100">হিস্টরি</h1><div class="glass rounded-2xl p-6 text-center text-xs text-slate-300">কোনো হিস্টরি নেই।</div></div>`);
   icons();
 }
 
 function profileView(){
   if(!user){setView(`<p class="p-8 text-center text-xs">লগইন করুন</p>`);return}
   const p=profile||{};
-  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-24">
+  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
     <form id="pf" class="glass rounded-2xl p-4 space-y-3">
       <h1 class="text-lg font-black text-slate-100">প্রোফাইল (বাধ্যতামূলক তথ্য)</h1>
       <div><label class="lbl text-xs">টিম নেম <span class="text-red-400">*</span></label><input class="inp text-sm" name="team" required value="${esc(p.team||'')}"></div>
@@ -364,7 +363,7 @@ function adminView(){
     setView(`<div class="p-12 text-center text-red-400 font-bold text-xs">404 - Unauthorized Access!</div>`);
     return;
   }
-  setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-24">
+  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
     <h1 class="text-lg font-black text-slate-100">অ্যাডমিন কন্ট্রোল প্যানেল (/admin)</h1>
     
     <div class="glass rounded-2xl p-4 space-y-3 border border-volt/40">

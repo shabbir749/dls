@@ -1,5 +1,6 @@
 import * as F from './firebase.js';
 import {$,esc,money,icons,skeleton,toast,modal} from './ui.js';
+import {build, renderBracket, advance} from './bracket.js';
 
 const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'open',list:[],q:''};
@@ -8,7 +9,6 @@ const ADMIN_EMAIL = 'theshabbirtech@gmail.com';
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;
-const statusBadge=s=>({open:['আসন্ন','bg-volt/15 text-volt'],live:['লাইভ','bg-neon/15 text-neon'],done:['সম্পন্ন','bg-gold/15 text-gold']}[s]||['?','']);
 const fdate=s=>s?new Date(s).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'}):'নির্ধারিত নয়';
 const countdown=s=>{if(!s)return '';const ms=new Date(s)-Date.now();return isNaN(ms)?'':ms<=0?'শীঘ্রই শুরু হচ্ছে':`শুরু হবে ${Math.floor(ms/60000)}মি এ`;};
 const run=async(fn,ok)=>{try{await fn();if(ok)toast(ok);return true}catch(e){toast(e.message,'err');return false}};
@@ -54,12 +54,13 @@ function authModal(){
 function route(){
   if(unsub){unsub();unsub=null}
   if(!F.configured)return setView(`<div class="m-4 glass rounded-2xl p-5"><h2 class="font-bold text-gold">ফায়ারবেজ কনফিগার করা হয়নি</h2></div>`);
-  const [,p,a]=location.hash.split('/');
+  const [,p,a,r,i]=location.hash.split('/');
   document.querySelectorAll('[data-nav]').forEach(n=>{const on=n.dataset.nav===(p||'');n.classList.toggle('text-volt',on);n.classList.toggle('font-bold',on);n.classList.toggle('text-slate-300',!on)});
   setView(skeleton());window.scrollTo(0,0);
   
   if(p==='admin')return adminView();
   if(p==='t')return tourney(a);
+  if(p==='m')return matchView(a,r,i);
   if(p==='wallet')return walletView();
   if(p==='history')return historyView();
   if(p==='me')return profileView();
@@ -79,7 +80,7 @@ function drawFeed(){
         <p><b>১. প্রোফাইল সেটআপ:</b> প্রথমে প্রোফাইল অপশনে গিয়ে সঠিক টিম নাম, মোবাইল নম্বর এবং পিকচার দিন (বাধ্যতামূলক)।</p>
         <p><b>২. ওয়ালেট ব্যালেন্স:</b> ওয়ালেট অপশনে গিয়ে বিকাশ/নগদ থেকে 'এড মানি' করুন।</p>
         <p><b>৩. টুর্নামেন্ট জয়েন:</b> পছন্দের টুর্নামেন্টে প্রবেশ করে 'জয়েন করুন' ক্লিক করলে ফি কেটে নেওয়া হবে।</p>
-        <p><b>৪. ম্যাচ খেলা:</b> স্লট পূর্ণ হলে অ্যাডমিন ফিকচার বা কোড দেবেন। প্রতিপক্ষকে ফ্রেন্ড লিস্টে এড করে ৫ মিনিটের মধ্যে রুম কোড দিয়ে ম্যাচ খেলুন!</p>
+        <p><b>৪. ম্যাচ খেলা:</b> স্লট পূর্ণ হলে ব্র্যাকেট জেনারেট হবে। ব্র্যাকেটে আপনার ম্যাচে ক্লিক করে প্রতিপক্ষের সাথে ৫ মিনিটের ডিএলএস রুম কোড শেয়ার করে খেলুন!</p>
       </div>
     </div>
   </div>`);
@@ -137,13 +138,11 @@ const actions={
   addMoneyModal(){
     const m=modal(`<div class="space-y-4">
       <h3 class="text-base font-bold text-slate-100 border-b border-white/10 pb-2">টাকা এড করুন</h3>
-      
       <div class="rounded-2xl bg-slate-900 p-4 border border-volt/40 text-center space-y-2">
         <div class="text-xs text-slate-400 font-medium">অফিশিয়াল বিকাশ/নগদ পার্সোনাল নম্বর</div>
         <div class="text-2xl font-black text-volt tracking-wider select-all">01878254585</div>
         <button type="button" id="copyBtn" class="btn btn-n !py-1 !px-4 text-xs font-bold inline-flex items-center gap-1.5"><i data-lucide="copy" class="h-3.5 w-3.5"></i>নম্বর কপি করুন</button>
       </div>
-
       <div class="rounded-2xl bg-slate-900/80 p-3 space-y-1 text-xs text-slate-300 border border-white/10">
         <div class="font-bold text-volt">নির্দেশাবলী:</div>
         <p>১. উপরে দেওয়া নম্বরে Send Money করুন।</p>
@@ -151,7 +150,7 @@ const actions={
       </div>
       <div><label class="lbl text-xs">টাকার পরিমাণ</label><input id="am" class="inp text-sm" type="number" placeholder="যেমন: ১০০" min="10"></div>
       <div><label class="lbl text-xs">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp text-sm" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
-      <button id="verifyBtn" class="btn btn-n w-full py-3 text-xs font-bold">VERIFY & SUBMIT</button>
+      <button id="verifyBtn" class="btn btn-n w-full py-3 font-bold">VERIFY & SUBMIT</button>
     </div>`);
 
     m.$('#copyBtn').onclick=()=>{
@@ -178,7 +177,7 @@ const actions={
       </div>
       <div><label class="lbl text-xs">বিকাশ/নগদ নম্বর (Personal)</label><input id="wn" class="inp text-sm" type="tel" placeholder="01XXXXXXXXX"></div>
       <div><label class="lbl text-xs">পরিমাণ (৳)</label><input id="wa" class="inp text-sm" type="number" placeholder="ন্যূনতম ১০০ টাকা" min="100"></div>
-      <button id="wBtn" class="btn btn-p w-full py-3 text-xs font-bold">উইথড্র অনুরোধ পাঠান</button>
+      <button id="wBtn" class="btn btn-p w-full py-3 font-bold">উইথড্র অনুরোধ পাঠান</button>
     </div>`);
     m.$('#wBtn').onclick=async()=>{
       const amount=+m.$('#wa').value, phone=m.$('#wn').value.trim();
@@ -218,12 +217,10 @@ function drawT(){
       ${me?`<div class="rounded-xl bg-neon/10 p-3 text-center text-neon font-bold text-xs">✔ আপনি সফলভাবে জয়েন করেছেন</div>`:''}
     </div>
 
-    <!-- Fixture / Room Info Section for Players -->
+    <!-- Dynamic Tournament Bracket / Matches Section -->
     <div class="glass rounded-2xl p-4 space-y-3">
-      <h2 class="font-bold text-slate-100 text-xs flex items-center gap-1.5"><i data-lucide="swords" class="h-4 w-4 text-volt"></i>ম্যাচ ফিকচার ও রুম কোড (৫ মিনিট উইন্ডো)</h2>
-      <div class="bg-slate-900/80 p-3 rounded-xl text-xs space-y-2 text-slate-300">
-        ${t.fixtureInfo ? `<p class="font-semibold text-volt">ℹ ফিকচার আপডেট: ${esc(t.fixtureInfo)}</p>` : `<p class="text-slate-400">অ্যাডমিন এখনো ফিকচার বা রুম কোড আপডেট করেননি। স্লট পূর্ণ হওয়ার পর এখানে দেখতে পাবেন।</p>`}
-      </div>
+      <h2 class="font-bold text-slate-100 text-xs flex items-center gap-1.5"><i data-lucide="swords" class="h-4 w-4 text-volt"></i>ম্যাচ ব্র্যাকেট ও ফিকচার</h2>
+      ${t.rounds ? renderBracket(t, uid) : `<p class="text-xs text-slate-400">স্লট পূর্ণ হওয়ার পর অ্যাডমিন ব্র্যাকেট জেনারেট করবেন।</p>`}
     </div>
 
     <div class="glass rounded-2xl p-4 space-y-2">
@@ -235,26 +232,54 @@ function drawT(){
 
     ${isAdmin ? `
       <div class="glass rounded-2xl p-4 space-y-3 border border-volt/40 bg-slate-950">
-        <h2 class="font-bold text-volt text-xs">অ্যাডমিন কন্ট্রোল: ফিকচার ও রুম কোড সেট করুন</h2>
-        <form id="fixForm" class="space-y-2.5">
-          <textarea class="inp text-xs" name="fixtureInfo" placeholder="যেমন: Semi-Final 1: Team A vs Team B (Room Code: 5432)" rows="3" required>${esc(t.fixtureInfo || '')}</textarea>
-          <button class="btn btn-p w-full py-2 text-xs font-bold">ফিকচার আপডেট করুন</button>
-        </form>
+        <h2 class="font-bold text-volt text-xs">অ্যাডমিন অ্যাকশন: ব্র্যাকেট জেনারেট</h2>
+        <button id="genBracketBtn" class="btn btn-p w-full py-2.5 text-xs font-bold">ব্র্যাকেট অটো-জেনারেট করুন</button>
       </div>
     ` : ''}
   </div>`);
   icons();
 
-  if(isAdmin && $('#fixForm')){
-    $('#fixForm').onsubmit=async e=>{
-      e.preventDefault();
-      const val = new FormData(e.target).get('fixtureInfo');
-      try{
-        await F.updateDoc(tref(t.id),{ fixtureInfo: val });
-        toast('ফিকচার ও রুম কোড সফলভাবে আপডেট হয়েছে!');
-      }catch(err){toast(err.message,'err')}
+  if(isAdmin && $('#genBracketBtn')){
+    $('#genBracketBtn').onclick=async()=>{
+      if(t.players.length < 2) return toast('নূন্যতম ২ জন প্লেয়ার জয়েন করতে হবে','err');
+      try {
+        const rounds = build(t.players);
+        await F.updateDoc(tref(t.id), { rounds, status: 'live' });
+        toast('সফলভাবে ব্র্যাকেট তৈরি করা হয়েছে!');
+      } catch(e){toast(e.message,'err')}
     };
   }
+}
+
+function matchView(tid, r, i){
+  unsub=F.onSnapshot(tref(tid),s=>{
+    if(!s.exists())return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ পাওয়া যায়নি</p>`);
+    T={id:...s.data()};
+    const m = T.rounds?.['r'+r]?.[i];
+    if(!m) return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ ডেটা ভুল</p>`);
+    
+    setView(`<div class="space-y-4 px-3 py-4 max-w-xl mx-auto pb-24">
+      <a href="#/t/${tid}" class="inline-flex items-center gap-1 text-xs text-volt font-medium"><i data-lucide="chevron-left" class="h-4 w-4"></i>টুর্নামেন্টে ফিরে যান</a>
+      <div class="glass rounded-2xl p-5 space-y-4 text-center">
+        <h1 class="text-sm font-bold text-volt uppercase tracking-wider">DLS Match Screen</h1>
+        <div class="grid grid-cols-2 gap-4 items-center bg-slate-900/80 p-4 rounded-xl border border-white/10">
+          <div>
+            <div class="font-bold text-sm text-slate-100">${esc(m.a?.team||'TBD')}</div>
+            <div class="text-[11px] text-slate-400">Team A</div>
+          </div>
+          <div>
+            <div class="font-bold text-sm text-slate-100">${esc(m.b?.team||'TBD')}</div>
+            <div class="text-[11px] text-slate-400">Team B</div>
+          </div>
+        </div>
+        <div class="rounded-xl bg-slate-900 p-3 border border-volt/30 space-y-1.5 text-left text-xs">
+          <div class="font-bold text-volt">DLS Friend Code / Room Code (5 Min Active):</div>
+          <p class="text-slate-300">${m.room ? esc(m.room) : 'এখনো কোড দেওয়া হয়নি'}</p>
+        </div>
+      </div>
+    </div>`);
+    icons();
+  });
 }
 
 actions.join=async()=>{
@@ -374,7 +399,6 @@ function adminView(){
         start: fd.get('start'),
         status: 'open',
         players: [],
-        fixtureInfo: '',
         createdAt: F.serverTimestamp()
       });
       toast('টুর্নামেন্ট সফলভাবে তৈরি হয়েছে!');

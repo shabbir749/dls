@@ -175,6 +175,21 @@ function drawT(){
   const mine=user&&all.find(x=>x.m.status!=='done'&&x.m.a&&x.m.b&&(x.m.a.uid===user.uid||x.m.b.uid===user.uid));
   const review=host?all.filter(x=>['submitted','confirmed','disputed'].includes(x.m.status)):[];
   const payPlaces=[0,1,2].filter(i=>(t.prizes||[])[i]>0);
+  
+  // প্রাইজ পুল breakdown হিসাব ও রেন্ডারিং লজিক
+  const totalPool = prizeTotal(t);
+  const prizes = t.prizes || [0, 0, 0];
+  const prizeBreakdownHtml = totalPool > 0 ? `
+    <div class="rounded-2xl border border-gold/40 bg-gold/5 p-4 sm:p-5 space-y-2">
+      <div class="flex items-center gap-2 font-bold text-gold text-base"><i data-lucide="trophy" class="h-5 w-5"></i>পুরস্কারের বিবরণ (Prize Pool)</div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm pt-1">
+        <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">মোট পুরস্কার</div><div class="font-extrabold text-gold text-base mt-0.5">${money(totalPool)}</div></div>
+        <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">🥇 ১ম স্থান</div><div class="font-extrabold text-slate-100 text-base mt-0.5">${money(prizes[0]||0)}</div></div>
+        <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">🥈 ২য় স্থান</div><div class="font-extrabold text-slate-100 text-base mt-0.5">${money(prizes[1]||0)}</div></div>
+        <div class="rounded-xl bg-slate-900/60 p-2.5 text-center"><div class="text-xs text-slate-400">🥉 ৩য় স্থান</div><div class="font-extrabold text-slate-100 text-base mt-0.5">${money(prizes[2]||0)}</div></div>
+      </div>
+    </div>` : '';
+
   const payRow=i=>{const po=pays[i];return `<div class="rounded-xl bg-slate-900/60 p-3.5 text-sm"><div class="flex items-center justify-between gap-2"><strong class="text-slate-100">${PL(i)} · ${money(t.prizes[i])}</strong>
     <span class="badge ${po?(po.ok===true?'bg-neon/20 text-neon':po.ok===false?'bg-red-500/20 text-red-300':'bg-gold/20 text-gold'):'bg-white/10 text-slate-300'}">${po?(po.ok===true?'টাকা পেয়েছি':po.ok===false?'পাইনি':'পাঠানো হয়েছে · কনফার্মেশনের অপেক্ষা'):'এখনো দেওয়া হয়নি'}</span></div>
     ${po?`<div class="mt-1.5 text-xs text-slate-300">${esc(po.team)} · TrxID <b class="select-all text-slate-100">${esc(po.trx)}</b></div>`:''}
@@ -191,6 +206,8 @@ function drawT(){
   <div><div id="hs" class="h-20 animate-pulse rounded-2xl bg-slate-800/60"></div>
   <div class="mt-1.5 flex justify-end gap-3 text-xs">${user&&t.hostPhone?`<a target="_blank" rel="noopener" href="https://wa.me/${String(t.hostPhone).replace(/\D/g,'')}" class="text-neon underline font-medium">হোস্টের সাথে যোগাযোগ</a>`:''}${!host?`<button data-act="report" class="text-red-400 underline font-medium">হোস্ট / টুর্নামেন্ট রিপোর্ট করুন</button>`:''}</div></div>
   
+  ${prizeBreakdownHtml}
+
   <div class="flex flex-wrap gap-2">
   ${t.status==='open'&&!me&&!full?`<button data-act="join" class="btn btn-n flex-1 py-3 text-base font-bold"><i data-lucide="log-in" class="h-4 w-4"></i>যুক্ত হোন · ${t.fee>0?money(t.fee):'ফ্রি'}</button>`:''}
   ${me&&t.status==='open'?(isPaid(me)?`<div class="btn btn-g flex-1 !text-neon py-3 text-sm font-bold"><i data-lucide="check-circle-2" class="h-4 w-4"></i>আপনি যুক্ত আছেন</div>`:`<div class="btn btn-g flex-1 !text-gold py-3 text-sm font-bold"><i data-lucide="clock" class="h-4 w-4"></i>পেমেন্ট যাচাইয়ের অপেক্ষায়</div>`):''}

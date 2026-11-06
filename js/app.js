@@ -4,7 +4,7 @@ import {$,esc,money,icons,skeleton,toast,modal} from './ui.js';
 const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'open',list:[],q:''};
 
-const ADMIN_EMAIL = 'theshabbirtech@gmail.com'; // Apnar admin email ekhane thakbe
+const ADMIN_EMAIL = 'theshabbirtech@gmail.com'; // আপনার অ্যাডমিন ইমেইল এখানে দিন
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;
@@ -26,7 +26,7 @@ function header(){
   const bal = profile?.balance || 0;
   $('#hdr').innerHTML=`<div class="flex items-center justify-between w-full max-w-3xl mx-auto px-4 py-2">
     <div class="font-black text-lg tracking-tight text-slate-100 flex items-center gap-2">
-      <img src="https://github.com/shabbir749/dls/blob/main/launchericon-192x192.png" class="h-7 w-7 rounded-lg object-cover">
+      <span class="grid h-7 w-7 place-items-center rounded-lg bg-volt text-ink font-bold text-xs">DLS</span>
       <span>DLS <span class="text-volt">Tournament Hub</span></span>
     </div>
     <div class="flex items-center gap-3">
@@ -164,7 +164,7 @@ const actions={
     m.$('#wBtn').onclick=async()=>{
       const amount=+m.$('#wa').value, phone=m.$('#wn').value.trim();
       if(amount<100||!phone)return toast('ন্যূনতম ১০০ টাকা এবং সঠিক নম্বর দিন','err');
-      if((profile?.winBalance||0)<amount)return toast('অপর্যাপ্ত উইনিং ব্যালেন্স!','err');
+      if((profile?.winBalance||0)<amount)return toast('পর্যাপ্ত উইনিং ব্যালেন্স নেই!','err');
       try {
         await F.addDoc(F.collection(db,'withdraws'),{uid:user.uid, team:profile?.team||'User', amount, phone, status:'pending', createdAt:F.serverTimestamp()});
         toast('উইথড্র অনুরোধ জমা হয়েছে।'); m.close();
@@ -185,9 +185,9 @@ function drawT(){
     <a href="#/" class="inline-flex items-center gap-1 text-xs text-volt font-medium"><i data-lucide="chevron-left" class="h-4 w-4"></i>ফিরে যান</a>
     <div class="glass rounded-3xl p-5 space-y-4 border border-white/10">
       <div class="flex justify-between items-start"><h1 class="text-xl font-black text-slate-100">${esc(t.name)}</h1><span class="badge bg-volt/15 text-volt">আসন্ন</span></div>
-      <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-3.5 rounded-2xl">
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-3.5 rounded-2xl">
         <div><div class="text-xs text-slate-400">এন্ট্রি ফি:</div><div class="text-lg font-black text-volt">৳${t.fee||0}</div></div>
-        <div><div class="text-xs text-slate-400">উইনিং প্রাইজ (Winner):</div><div class="text-lg font-black text-gold">৳${t.winnerPrize||0}</div></div>
+        <div><div class="text-xs text-slate-400">উইনিং প্রাইজ:</div><div class="text-lg font-black text-gold">৳${t.winnerPrize||0}</div></div>
       </div>
       <div class="bg-slate-900/80 p-3 rounded-xl text-xs space-y-1">
         <div>🥇 Winner: <b>৳${t.winnerPrize||0}</b></div>
@@ -323,9 +323,4 @@ function adminView(){
       e.target.reset();
     } catch(err){toast(err.message,'err')}
   };
-}
-
-function tourney(id){ tourneyDetail(id); }
-function tourneyDetail(id){
-  unsub=F.onSnapshot(tref(id),s=>{if(!s.exists())return setView(`<p class="p-8 text-center text-slate-300">টুর্নামেন্ট পাওয়া যায়নি</p>`);T={id,...s.data()};T.players=T.players||[];drawT()},e=>toast(e.message,'err'));
 }

@@ -4,7 +4,7 @@ import {$,esc,money,icons,skeleton,toast,modal} from './ui.js';
 const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'open',list:[],q:''};
 
-const ADMIN_EMAIL = 'theshabbirtech@gmail.com'; // আপনার অ্যাডমিন ইমেইল এখানে দিন
+const ADMIN_EMAIL = 'admin@dls.com'; // Apnar admin email
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;
@@ -30,7 +30,7 @@ function header(){
       <span>DLS <span class="text-volt">Tournament Hub</span></span>
     </div>
     <div class="flex items-center gap-3">
-      <div class="glass px-3 py-1 rounded-full text-xs font-bold text-gold border border-gold/30">My Balance: ৳${bal}</div>
+      <a href="#/wallet" class="glass px-3.5 py-1.5 rounded-full text-xs font-bold text-gold border border-gold/30 hover:border-gold transition cursor-pointer">My Balance: ৳${bal}</a>
       ${user?`<a href="#/me" class="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 text-xs font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-7 w-7 rounded-full object-cover"><span class="max-w-[6rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-3 text-xs">প্রবেশ করুন</button>`}
     </div>
   </div>`;
@@ -75,7 +75,21 @@ addEventListener('hashchange',route);
 nav();
 
 function drawFeed(){
-  setView(`<div class="space-y-4 p-4 max-w-xl mx-auto"><h1 class="text-xl font-black text-slate-100 flex items-center gap-2"><i data-lucide="zap" class="h-5 w-5 text-volt"></i>চলমান ও আসন্ন টুর্নামেন্টসমূহ</h1><div id="fl" class="space-y-4"></div></div>`);
+  setView(`<div class="space-y-6 p-4 max-w-xl mx-auto">
+    <h1 class="text-xl font-black text-slate-100 flex items-center gap-2"><i data-lucide="zap" class="h-5 w-5 text-volt"></i>চলমান ও আসন্ন টুর্নামেন্টসমূহ</h1>
+    <div id="fl" class="space-y-4"></div>
+    
+    <!-- Tournament Join Rules & FAQ Section -->
+    <div class="glass rounded-3xl p-5 space-y-3 border border-volt/30">
+      <h2 class="font-bold text-volt text-base flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5"></i>টুর্নামেন্টে জয়েন করার নিয়ম ও নির্দেশাবলী (FAQ)</h2>
+      <div class="space-y-2 text-xs text-slate-300">
+        <p><b>১. প্রোফাইল সেটআপ:</b> প্রথমে প্রোফাইল অপশনে গিয়ে আপনার সঠিক টিম নাম, মোবাইল নম্বর এবং প্রোফাইল পিকচার সেট করুন (বাধ্যতামূলক)।</p>
+        <p><b>২. ওয়ালেট ব্যালেন্স:</b> ওয়ালেট অপশনে গিয়ে বিকাশ বা নগদ থেকে 'এড মানি' করে অ্যাকাউন্টে ব্যালেন্স যোগ করুন।</p>
+        <p><b>৩. টুর্নামেন্ট জয়েন:</b> আপনার পছন্দের টুর্নামেন্টে প্রবেশ করে 'টুর্নামেন্ট জয়েন করুন' বাটনে ক্লিক করলেই এন্ট্রি ফি কেটে নেওয়া হবে এবং আপনি সফলভাবে যুক্ত হয়ে যাবেন।</p>
+        <p><b>৪. ম্যাচ আপডেট:</b> ম্যাচ শুরুর সময় অ্যাডমিন রুম কোড প্রদান করবেন। নিয়ম মেনে ম্যাচ খেলুন এবং জয়ী হয়ে প্রাইজমানি জিতে নিন!</p>
+      </div>
+    </div>
+  </div>`);
   drawList();
 }
 
@@ -130,16 +144,29 @@ const actions={
   addMoneyModal(){
     const m=modal(`<div class="space-y-4">
       <h3 class="text-lg font-bold text-slate-100 border-b border-white/10 pb-2">টাকা এড করুন</h3>
-      <div class="rounded-2xl bg-slate-900/80 p-4 space-y-2 text-xs border border-white/10">
-        <div class="font-bold text-volt">টাকা পাঠানোর নির্দেশাবলী:</div>
-        <p class="text-slate-300">১. বিকাশ বা নগদ পার্সোনাল নম্বরে Send Money করুন।</p>
-        <p class="text-slate-300">২. প্রাপক নম্বর: <b class="select-all text-gold">01800000000</b></p>
-        <p class="text-slate-300">৩. সঠিক টাকা পাঠিয়ে নিচের বক্সে TrxID দিন।</p>
+      
+      <!-- Dedicated Big Number Section with Copy Button -->
+      <div class="rounded-2xl bg-slate-900 p-4 border border-volt/40 text-center space-y-2">
+        <div class="text-xs text-slate-400 font-medium">অফিশিয়াল বিকাশ/নগদ পার্সোনাল নম্বর</div>
+        <div class="text-2xl font-black text-volt tracking-wider select-all" id="copyNum">01878254585</div>
+        <button type="button" id="copyBtn" class="btn btn-n !py-1 !px-4 text-xs font-bold inline-flex items-center gap-1.5"><i data-lucide="copy" class="h-3.5 w-3.5"></i>নম্বর কপি করুন</button>
+      </div>
+
+      <div class="rounded-2xl bg-slate-900/80 p-3 space-y-1 text-xs text-slate-300 border border-white/10">
+        <div class="font-bold text-volt mb-1">নির্দেশাবলী:</div>
+        <p>১. উপরে দেওয়া নম্বরে Send Money করুন।</p>
+        <p>২. সঠিক টাকা পাঠিয়ে নিচের বক্সে টাকার পরিমাণ ও TrxID দিন।</p>
       </div>
       <div><label class="lbl">টাকার পরিমাণ</label><input id="am" class="inp" type="number" placeholder="যেমন: ১০০" min="10"></div>
       <div><label class="lbl">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
       <button id="verifyBtn" class="btn btn-n w-full py-3 font-bold">VERIFY & SUBMIT</button>
     </div>`);
+
+    m.$('#copyBtn').onclick=()=>{
+      navigator.clipboard.writeText('01878254585');
+      toast('নম্বর সফলভাবে কপি হয়েছে!');
+    };
+
     m.$('#verifyBtn').onclick=async()=>{
       const amount=+m.$('#am').value, trx=m.$('#tx').value.trim();
       if(!amount||amount<=0||trx.length<5)return toast('সঠিক পরিমাণ ও TrxID দিন','err');

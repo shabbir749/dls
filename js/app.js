@@ -26,7 +26,7 @@ function header(){
   const bal = profile?.balance || 0;
   $('#hdr').innerHTML=`<div class="flex items-center justify-between w-full max-w-3xl mx-auto px-4 py-2">
     <div class="font-black text-lg tracking-tight text-slate-100 flex items-center gap-2">
-      <img src="launchericon-192x192.png" class="h-7 w-7 rounded-lg object-cover">
+      <img src="https://github.com/shabbir749/dls/blob/main/launchericon-192x192.png" class="h-7 w-7 rounded-lg object-cover">
       <span>DLS <span class="text-volt">Tournament Hub</span></span>
     </div>
     <div class="flex items-center gap-3">

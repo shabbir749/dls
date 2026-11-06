@@ -24,15 +24,9 @@ F.onAuthStateChanged(auth,async u=>{
 
 function header(){
   const bal = profile?.balance || 0;
-  $('#hdr').innerHTML=`<div class="flex items-center justify-between w-full max-w-3xl mx-auto px-4 py-2">
-    <div class="font-black text-lg tracking-tight text-slate-100 flex items-center gap-2">
-      <span class="grid h-7 w-7 place-items-center rounded-lg bg-volt text-ink font-bold text-xs">DLS</span>
-      <span>DLS <span class="text-volt">Tournament Hub</span></span>
-    </div>
-    <div class="flex items-center gap-3">
-      <a href="#/wallet" class="glass px-3.5 py-1.5 rounded-full text-xs font-bold text-gold border border-gold/30 hover:border-gold transition cursor-pointer">My Balance: ৳${bal}</a>
-      ${user?`<a href="#/me" class="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 text-xs font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-7 w-7 rounded-full object-cover"><span class="max-w-[6rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-3 text-xs">প্রবেশ করুন</button>`}
-    </div>
+  $('#hdr').innerHTML=`<div class="flex items-center justify-end w-full max-w-3xl mx-auto px-4 py-2 gap-3">
+    <a href="#/wallet" class="glass px-3.5 py-1.5 rounded-full text-xs font-bold text-gold border border-gold/30 hover:border-gold transition cursor-pointer">My Balance: ৳${bal}</a>
+    ${user?`<a href="#/me" class="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-1 pr-3 text-xs font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-7 w-7 rounded-full object-cover"><span class="max-w-[6rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-3 text-xs">প্রবেশ করুন</button>`}
   </div>`;
   icons();
 }

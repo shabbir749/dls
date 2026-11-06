@@ -254,7 +254,7 @@ function drawT(){
 function matchView(tid, r, i){
   unsub=F.onSnapshot(tref(tid),s=>{
     if(!s.exists())return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ পাওয়া যায়নি</p>`);
-    T={id:...s.data()};
+    T={id:s.id, ...s.data()};
     const m = T.rounds?.['r'+r]?.[i];
     if(!m) return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ ডেটা ভুল</p>`);
     
@@ -348,7 +348,10 @@ function profileView(){
     if(!d.team || !d.phone || !d.avatar) return toast('টিম নাম, ফোন নম্বর এবং প্রোফাইল ছবি দেওয়া বাধ্যতামূলক!','err');
     try{
       await F.setDoc(F.doc(db,'users',user.uid),d,{merge:true});
-      profile={...profile,...d}; header();
+      profile.team = d.team;
+      profile.phone = d.phone;
+      profile.avatar = d.avatar;
+      header();
       toast('প্রোফাইল সংরক্ষিত হয়েছে!'); location.hash='#/';
     }catch(err){toast(err.message,'err')}
   };

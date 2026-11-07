@@ -50,12 +50,13 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #22
 </head>
 <body class="min-h-screen font-sans text-slate-100 antialiased">
 <header class="sticky top-0 z-40 border-b border-white/10 bg-ink/90 backdrop-blur-md" style="padding-top:env(safe-area-inset-top)">
-  <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-3">
-    <a href="#/" class="flex items-center gap-1.5 text-base font-bold tracking-tight min-w-0">
-      <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-volt to-neon text-ink">
-        <i data-lucide="trophy" class="h-3.5 w-3.5"></i>
+  <div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-3 md:px-4">
+    <!-- লোগোতে whitespace-nowrap যোগ করা হয়েছে যাতে লেখা সংকুচিত না হয় -->
+    <a href="#/" class="flex items-center gap-2 text-base font-bold tracking-tight shrink-0 whitespace-nowrap">
+      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-volt to-neon text-ink shadow-lg shadow-volt/20">
+        <i data-lucide="trophy" class="h-4 w-4"></i>
       </span>
-      <span class="truncate">DLS <span class="text-volt">Hub</span></span>
+      <span>DLS <span class="text-volt">Hub</span></span>
     </a>
     <div id="hdr" class="shrink-0 flex items-center gap-2"></div>
   </div>

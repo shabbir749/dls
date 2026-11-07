@@ -6,7 +6,7 @@ const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'upcoming',list:[],q:''};
 
 const ADMIN_EMAIL = 'theshabbirtech@gmail.com';
-const COMMUNITY_LINK = 'https://chat.whatsapp.com/your-group-link'; 
+const COMMUNITY_LINK = 'https://chat.whatsapp.com/KX9hr8fJ4JyHSRssYZd5fy'; 
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;

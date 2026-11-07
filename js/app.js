@@ -37,8 +37,6 @@ function header(){
     <div class="hidden md:flex items-center gap-6 text-xs font-semibold">
       <a href="#/" class="hover:text-volt transition">হোম</a>
       <a href="#/history" class="hover:text-volt transition">হিস্টরি</a>
-      <a href="#/wallet" class="hover:text-volt transition">ওয়ালেট</a>
-      <a href="#/me" class="hover:text-volt transition">প্রোফাইল</a>
     </div>
 
     <div class="flex items-center gap-2 ml-auto">

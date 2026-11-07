@@ -6,7 +6,7 @@ const {auth,db}=F,app=$('#app');
 let user=null,profile=null,unsub=null,T=null,S={tab:'upcoming',list:[],q:''};
 
 const ADMIN_EMAIL = 'theshabbirtech@gmail.com';
-const COMMUNITY_LINK = 'https://chat.whatsapp.com/your-group-link'; // আপনার হোয়াটসঅ্যাপ/ফেসবুক গ্রুপ লিংক
+const COMMUNITY_LINK = 'https://chat.whatsapp.com/your-group-link'; 
 
 const tref=id=>F.doc(db,'tournaments',id);
 const complete=p=>p&&p.team&&p.phone&&p.avatar;
@@ -25,6 +25,7 @@ F.onAuthStateChanged(auth,async u=>{
   header();nav();route();
 });
 
+// Fixed Header: Duplicate DLS Hub logo removed
 function header(){
   const bal = profile?.balance || 0;
   const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Crect width='30' height='30' fill='%23334155'/%3E%3Ctext x='50%25' y='50%25' fill='%23fff' font-size='12' text-anchor='middle' dy='.3em'%3EU%3C/text%3E%3C/svg%3E";
@@ -32,11 +33,6 @@ function header(){
   const hdrEl = $('#hdr');
   if(!hdrEl) return;
   hdrEl.innerHTML=`<div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-2 bg-slate-900/90 backdrop-blur border-b border-white/10 sticky top-0 z-40">
-    <a href="#/" class="flex items-center gap-2">
-      <div class="h-8 w-8 rounded-xl bg-gradient-to-tr from-volt to-neon flex items-center justify-center font-black text-slate-950 text-sm shadow-lg shadow-volt/20">DLS</div>
-      <span class="font-black text-sm md:text-base text-slate-100 tracking-wide">Tournament Hub</span>
-    </a>
-    
     <!-- Desktop Navigation Links -->
     <div class="hidden md:flex items-center gap-6 text-xs font-semibold">
       <a href="#/" class="hover:text-volt transition">হোম</a>
@@ -45,7 +41,7 @@ function header(){
       <a href="#/me" class="hover:text-volt transition">প্রোফাইল</a>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 ml-auto">
       <a href="#/wallet" class="glass px-3 py-1 rounded-full text-xs font-bold text-gold border border-gold/40 hover:border-gold transition flex items-center gap-1">
         <i data-lucide="wallet" class="h-3.5 w-3.5"></i>৳${bal}
       </a>
@@ -59,7 +55,6 @@ function nav(){
   const it=[['','gamepad-2','টুর্নামেন্ট','#/'],['history','scroll','হিস্টরি','#/history'],['wallet','wallet','ওয়ালেট','#/wallet'],['me','user-round','প্রোফাইল','#/me']];
   const navEl = $('#nav');
   if(!navEl) return;
-  // Responsive Bottom Navigation (Mobile Only)
   navEl.innerHTML=`<div class="md:hidden fixed bottom-0 left-0 right-0 z-40 mx-auto grid grid-cols-4 bg-slate-950/95 backdrop-blur border-t border-white/10 shadow-2xl">${it.map(([k,i,l,h])=>`<a href="${h}" data-nav="${k}" class="flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium text-slate-400 transition"><i data-lucide="${i}" class="h-4 w-4"></i>${l}</a>`).join('')}</div>`;
   icons();
 }
@@ -508,7 +503,6 @@ actions.join=async()=>{
   }catch(e){toast('জয়েন করা যায়নি: '+e.message,'err')}
 };
 
-// Comprehensive History View (Joined Tournaments + Transactions)
 function historyView(){
   if(!needAuth())return;
   const list = S.list.filter(t => (t.uids || []).includes(user.uid));
@@ -761,7 +755,7 @@ document.addEventListener('click', async e=>{
   const withDec = e.target.closest('[data-decline-with]');
   if(withDec){
     try{
-      await F.setDoc(F.doc(db,'withdraws',withDec.dataset.declineWith),{status:'rejected'},{merge:true});
+      await F.setDoc(F.doc(db,'deposits',withDec.dataset.declineWith),{status:'rejected'},{merge:true});
       toast('উইথড্র অনুরোধ বাতিল করা হয়েছে।');adminView();
     }catch(err){toast(err.message,'err')}
   }

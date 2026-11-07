@@ -49,6 +49,32 @@ export function advance(rounds, r, i, w) {
   next[i >> 1][i % 2 ? 'b' : 'a'] = slim(w);
 }
 
+/** Group Stage Fixture & Standings Builder */
+export function buildGroups(players, groupCount = 2) {
+  const ps = shuffle(players).map(slim);
+  const groups = {};
+  const standings = {};
+  
+  for (let g = 0; g < groupCount; g++) {
+    const gName = `Group ${String.fromCharCode(65 + g)}`;
+    groups[gName] = [];
+    standings[gName] = [];
+  }
+  
+  ps.forEach((p, idx) => {
+    const gKeys = Object.keys(groups);
+    const gName = gKeys[idx % groupCount];
+    groups[gName].push(p);
+    standings[gName].push({
+      uid: p.uid,
+      team: p.team,
+      mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0
+    });
+  });
+  
+  return { groups, standings };
+}
+
 export function renderBracket(T, uid) {
   const keys = Object.keys(T.rounds || {}).sort((a, b) => a.slice(1) - b.slice(1));
   if (!keys.length) return '';
@@ -76,7 +102,7 @@ export function renderBracket(T, uid) {
                       ${who(m.a, m.sa, m.winner && m.winner === m.a?.uid)}
                       <div class="h-px bg-white/10"></div>
                       ${who(m.b, m.sb, m.winner && m.winner === m.b?.uid)}
-                      ${m.status === 'disputed' ? '<div class="bg-red-500/20 px-2 py-0.5 text-[10px] font-bold uppercase text-red-300">disputed</div>' : ready && m.status !== 'pending' ? `<div class="bg-gold/20 px-2 py-0.5 text-[10px] font-bold uppercase text-gold">${m.status}</div>` : ''}
+                      ${m.status === 'disputed' ? '<div class="bg-red-500/20 px-2 py-0.5 text-[10px] font-bold uppercase text-red-300">প্রুফ জমা হয়েছে</div>' : ready && m.status !== 'pending' ? `<div class="bg-gold/20 px-2 py-0.5 text-[10px] font-bold uppercase text-gold">${m.status}</div>` : ''}
                     </a>`;
                 }).join('')}
               </div>

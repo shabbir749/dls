@@ -16,6 +16,9 @@ const setView=h=>{app.innerHTML=h;icons()};
 const needAuth=()=>{if(user)return true;authModal();return false};
 const listen=draw=>{unsub=F.onSnapshot(F.query(F.collection(db,'tournaments'),F.orderBy('createdAt','desc')),s=>{S.list=s.docs.map(d=>({id:d.id,...d.data()}));draw()},e=>toast(e.message,'err'))};
 
+// URL validation helper to prevent malicious javascript: links
+const safeUrl=u=>{try{const x=new URL(u);return x.protocol==='https:'?x.href:''}catch(e){return ''}};
+
 F.onAuthStateChanged(auth,async u=>{
   user=u;profile=null;
   if(u){try{const s=await F.getDoc(F.doc(db,'users',u.uid));profile=s.exists()?s.data():null}catch(e){}}
@@ -24,9 +27,11 @@ F.onAuthStateChanged(auth,async u=>{
 
 function header(){
   const bal = profile?.balance || 0;
+  // Inline SVG fallback instead of external placeholder URL
+  const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Crect width='30' height='30' fill='%23334155'/%3E%3Ctext x='50%25' y='50%25' fill='%23fff' font-size='12' text-anchor='middle' dy='.3em'%3EU%3C/text%3E%3C/svg%3E";
   $('#hdr').innerHTML=`<div class="flex items-center gap-1.5 shrink-0">
     <a href="#/wallet" class="glass px-2.5 py-1 rounded-full text-[11px] font-bold text-gold border border-gold/30 hover:border-gold transition whitespace-nowrap">ব্যালেন্স: ৳${bal}</a>
-    ${user?`<a href="#/me" class="flex items-center gap-1 rounded-full bg-white/10 py-0.5 pl-1 pr-2 text-[11px] font-semibold"><img src="${esc(profile?.avatar||'https://via.placeholder.com/30')}" class="h-5 w-5 rounded-full object-cover"><span class="max-w-[4rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-2 text-[11px]">লগইন</button>`}
+    ${user?`<a href="#/me" class="flex items-center gap-1 rounded-full bg-white/10 py-0.5 pl-1 pr-2 text-[11px] font-semibold"><img src="${esc(profile?.avatar||defaultAvatar)}" class="h-5 w-5 rounded-full object-cover"><span class="max-w-[4rem] truncate">${esc(profile?.team||'প্রোফাইল')}</span></a>`:`<button data-act="auth" class="btn btn-p !py-1 !px-2 text-[11px]">লগইন</button>`}
   </div>`;
   icons();
 }
@@ -149,7 +154,7 @@ const actions={
         <p>২. সঠিক টাকা পাঠিয়ে নিচের বক্সে পরিমাণ ও TrxID দিন।</p>
       </div>
       <div><label class="lbl text-xs">টাকার পরিমাণ</label><input id="am" class="inp text-sm" type="number" placeholder="যেমন: ১০০" min="10"></div>
-      <div><label class="lbl text-xs">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp text-sm" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
+      <div><label class="lbl text-xs">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp text-sm uppercase" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
       <button id="verifyBtn" class="btn btn-n w-full py-3 font-bold">ভেরিফাই ও সাবমিট</button>
     </div>`);
 
@@ -158,13 +163,15 @@ const actions={
       toast('নম্বর সফলভাবে কপি হয়েছে!');
     };
 
+    // Point 5: TrxID as document ID with validation
     m.$('#verifyBtn').onclick=async()=>{
-      const amount=+m.$('#am').value, trx=m.$('#tx').value.trim();
-      if(!amount||amount<=0||trx.length<5)return toast('সঠিক পরিমাণ ও TrxID দিন','err');
-      try {
-        await F.addDoc(F.collection(db,'deposits'),{uid:user.uid, team:profile?.team||'User', amount, trx, status:'pending', createdAt:F.serverTimestamp()});
-        toast('ডিপোজিট অনুরোধ সফলভাবে পাঠানো হয়েছে!'); m.close();
-      } catch(e){toast(e.message,'err')}
+      const amount=+m.$('#am').value;
+      const trx=m.$('#tx').value.trim().replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+      if(!amount||amount<10||amount>50000||trx.length<5)return toast('সঠিক পরিমাণ (১০–৫০,০০০) ও TrxID দিন','err');
+      try{
+        await F.setDoc(F.doc(db,'deposits',trx),{uid:user.uid,team:profile?.team||'User',amount,trx,status:'pending',createdAt:F.serverTimestamp()});
+        toast('ডিপোজিট অনুরোধ পাঠানো হয়েছে!');m.close();
+      }catch(e){toast(e.code==='permission-denied'?'এই TrxID আগেই জমা হয়েছে বা তথ্য ভুল':e.message,'err')}
     };
   },
   withdrawModal(){
@@ -225,7 +232,8 @@ function drawT(){
     <div class="glass rounded-2xl p-4 space-y-2">
       <div class="font-bold text-slate-100 text-xs">জয়েন করা টিমসমূহ (${n}/${t.max}):</div>
       <div class="space-y-1.5">
-        ${t.players.map(p=>`<div class="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl text-xs"><div class="flex items-center gap-2"><img src="${esc(p.avatar)}" class="h-7 w-7 rounded-full object-cover"><span>${esc(p.team)}</span></div><span class="text-slate-400 text-[11px]">${esc(p.phone)}</span></div>`).join('')||`<span class="text-xs text-slate-400">এখনো কেউ জয়েন করেনি।</span>`}
+        <!-- Point 3: Removed phone number display for privacy -->
+        ${t.players.map(p=>`<div class="flex items-center justify-between bg-white/5 px-3 py-2 rounded-xl text-xs"><div class="flex items-center gap-2"><img src="${esc(p.avatar)}" class="h-7 w-7 rounded-full object-cover"><span>${esc(p.team)}</span></div></div>`).join('')||`<span class="text-xs text-slate-400">এখনো কেউ জয়েন করেনি।</span>`}
       </div>
     </div>
 
@@ -293,7 +301,8 @@ function matchView(tid, r, i){
         <div class="rounded-xl bg-slate-900 p-3.5 border border-white/10 space-y-2 text-left text-xs">
           <div class="font-bold text-gold">ম্যাচ রেজাল্ট ও স্ক্রিনশট (প্রুফ):</div>
           <div>স্কোর: <b>${m.sa ?? '-'}</b> : <b>${m.sb ?? '-'}</b></div>
-          ${m.proof ? `<a href="${esc(m.proof)}" target="_blank" class="text-volt underline block truncate">স্ক্রিনশট লিংক দেখুন (View Proof)</a>` : '<div class="text-slate-400 text-[11px]">কোনো স্ক্রিনশট সাবমিট করা হয়নি।</div>'}
+          <!-- Point 8: safeUrl implementation to block malicious JS execution -->
+          ${m.proof && safeUrl(m.proof) ? `<a href="${esc(safeUrl(m.proof))}" target="_blank" rel="noopener noreferrer" class="text-volt underline block truncate">স্ক্রিনশট লিংক দেখুন</a>` : '<div class="text-slate-400 text-[11px]">কোনো স্ক্রিনশট সাবমিট করা হয়নি।</div>'}
           
           ${isPlayer && m.status!=='done' ? `
             <div class="space-y-2 pt-2 border-t border-white/10">
@@ -301,7 +310,7 @@ function matchView(tid, r, i){
                 <input id="saInp" class="inp text-xs !py-2" type="number" placeholder="আপনার গোল" value="${m.sa??''}">
                 <input id="sbInp" class="inp text-xs !py-2" type="number" placeholder="প্রতিপক্ষের গোল" value="${m.sb??''}">
               </div>
-              <input id="proofInp" class="inp text-xs !py-2" placeholder="স্ক্রিনশট ইমেজ লিংক (Image URL / ImgBB)" value="${esc(m.proof||'')}">
+              <input id="proofInp" class="inp text-xs !py-2" placeholder="স্ক্রিনশট ইমেজ লিংক (https://...)" value="${esc(m.proof||'')}">
               <button id="submitResBtn" class="btn btn-p w-full py-2 text-xs font-bold">রেজাল্ট ও প্রুফ জমা দিন</button>
             </div>
           ` : ''}
@@ -341,6 +350,7 @@ function matchView(tid, r, i){
       $('#submitResBtn').onclick=async()=>{
         const sa = +$('#saInp').value, sb = +$('#sbInp').value;
         const proof = $('#proofInp').value.trim();
+        if(proof && !safeUrl(proof)) return toast('সঠিক HTTPS ইমেজ লিংক দিন','err');
         m.sa = sa; m.sb = sb; m.proof = proof; m.status = 'disputed';
         T.rounds['r'+r][i] = m;
         await F.updateDoc(tref(tid), { rounds: T.rounds });
@@ -348,51 +358,68 @@ function matchView(tid, r, i){
       };
     }
 
+    // Point 7: Secure Winner Confirmation with Runner-up Prize and Double Payout Prevention
     if(isAdmin && $('#adminWinBtn')){
       $('#adminWinBtn').onclick=async()=>{
-        const winnerUid = $('#winnerSelect').value;
-        if(!winnerUid) return toast('সঠিক উইনার সিলেক্ট করুন','err');
-        const winnerTeam = winnerUid === m.a?.uid ? m.a : m.b;
-        m.winner = winnerUid;
-        m.status = 'done';
-        advance(T.rounds, +r, +i, winnerTeam);
-        T.rounds['r'+r][i] = m;
-        
-        if(+r === Object.keys(T.rounds).length - 1){
-          const uDoc = await F.getDoc(F.doc(db, 'users', winnerUid));
-          if(uDoc.exists()){
-            const curWinBal = uDoc.data().winBalance || 0;
-            await F.updateDoc(F.doc(db, 'users', winnerUid), { winBalance: curWinBal + (T.winnerPrize || 0) });
-          }
-        }
-
-        await F.updateDoc(tref(tid), { rounds: T.rounds });
-        toast('উইনার সফলভাবে কনফার্ম করা হয়েছে!');
+        const winnerUid=$('#winnerSelect').value;
+        if(!winnerUid)return toast('সঠিক উইনার সিলেক্ট করুন','err');
+        const w=winnerUid===m.a?.uid?m.a:m.b,l=winnerUid===m.a?.uid?m.b:m.a,isFinal=+r===Object.keys(T.rounds).length-1;
+        try{
+          await F.runTransaction(db,async tx=>{
+            const tRef=tref(tid),t=(await tx.get(tRef)).data(),mm=t.rounds['r'+r][i];
+            if(mm.status==='done')throw Error('এই ম্যাচের উইনার আগেই কনফার্ম হয়েছে');
+            let wd,ld;
+            if(isFinal){wd=await tx.get(F.doc(db,'users',w.uid));if(l)ld=await tx.get(F.doc(db,'users',l.uid))}
+            mm.winner=winnerUid;mm.status='done';advance(t.rounds,+r,+i,w);
+            const upd={rounds:t.rounds};
+            if(isFinal){
+              upd.status='done';upd.champion={uid:w.uid,team:w.team};
+              tx.set(wd.ref,{winBalance:(wd.data()?.winBalance||0)+(t.winnerPrize||0)},{merge:true});
+              if(ld)tx.set(ld.ref,{winBalance:(ld.data()?.winBalance||0)+(t.runnerUpPrize||0)},{merge:true});
+            }
+            tx.update(tRef,upd);
+          });
+          toast('উইনার কনফার্ম করা হয়েছে!');
+        }catch(e){toast(e.message,'err')}
       };
     }
   });
 }
 
+// Point 2: Secure Batch Join with Rules Validation
 actions.join=async()=>{
   if(!needAuth())return;
-  if(!complete(profile)){toast('প্রথমে প্রোফাইল সম্পূর্ণ করুন (টিম নাম, ফোন এবং ছবি বাধ্যতামূলক)','err'); location.hash='#/me'; return;}
-  const fee=T.fee||0, myBal=profile?.balance||0;
-  if(myBal<fee)return toast('ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই! এড মানি করুন।','err');
-
-  const ok=await run(async()=>{
-    await F.updateDoc(tref(T.id),{
-      players: F.arrayUnion({uid:user.uid, team:profile.team, phone:profile.phone, avatar:profile.avatar||''})
-    });
-    const newBal=myBal-fee;
-    await F.setDoc(F.doc(db,'users',user.uid),{balance:newBal},{merge:true});
-    profile.balance=newBal; header();
-    toast('সফলভাবে টুর্নামেন্টে জয়েন করেছেন!');
-  });
+  if(!complete(profile)){toast('প্রথমে প্রোফাইল সম্পূর্ণ করুন (টিম নাম, ফোন এবং ছবি বাধ্যতামূলকপুলিশ)','err');location.hash='#/me';return;}
+  const t=T,fee=t.fee||0,myBal=profile?.balance||0,uids=t.uids||[];
+  if(t.status!=='open')return toast('রেজিস্ট্রেশন বন্ধ','err');
+  if(uids.includes(user.uid))return toast('আপনি আগেই জয়েন করেছেন','err');
+  if(uids.length>=t.max)return toast('স্লট পূর্ণ','err');
+  if(myBal<fee)return toast('ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই! এড মানি করুন।','err');
+  try{
+    const b=F.writeBatch(db);
+    b.update(tref(t.id),{players:F.arrayUnion({uid:user.uid,team:profile.team,avatar:profile.avatar||''}),uids:F.arrayUnion(user.uid)});
+    if(fee>0)b.update(F.doc(db,'users',user.uid),{balance:myBal-fee});
+    await b.commit();
+    profile.balance=myBal-fee;header();toast('সফলভাবে টুর্নামেন্টে জয়েন করেছেন!');
+  }catch(e){toast('জয়েন করা যায়নি: '+e.message,'err')}
 };
 
+// Point 1: History view showing tournaments user joined
 function historyView(){
   if(!needAuth())return;
-  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24"><h1 class="text-base font-black text-slate-100">হিস্টরি</h1><div class="glass rounded-2xl p-6 text-center text-xs text-slate-300">কোনো হিস্টরি নেই।</div></div>`);
+  const list = S.list.filter(t => (t.uids || []).includes(user.uid));
+  setView(`<div class="space-y-4 py-4 max-w-xl mx-auto pb-24">
+    <h1 class="text-base font-black text-slate-100 flex items-center gap-1.5"><i data-lucide="scroll" class="h-4 w-4 text-volt"></i>আমার জয়েন করা টুর্নামেন্টসমূহ</h1>
+    <div class="space-y-3">
+      ${list.map(t=>`
+        <div class="glass rounded-2xl p-4 space-y-2 border border-white/10">
+          <div class="flex justify-between text-sm font-bold text-slate-100"><span>${esc(t.name)}</span><span class="text-volt">৳${t.fee||0}</span></div>
+          <div class="text-xs text-slate-400">শুরু: ${fdate(t.start)}</div>
+          <a href="#/t/${t.id}" class="btn btn-g w-full !py-1.5 text-xs">ম্যাচ ও ব্র্যাকেট দেখুন</a>
+        </div>
+      `).join('') || '<div class="glass rounded-2xl p-8 text-center text-xs text-slate-300">আপনি এখনো কোনো টুর্নামেন্টে জয়েন করেননি।</div>'}
+    </div>
+  </div>`);
   icons();
 }
 
@@ -523,8 +550,8 @@ function adminView(){
         <div>পরিমাণ: <span class="text-volt font-bold">৳${d.amount}</span></div>
         <div>TrxID: <span class="font-mono text-gold">${esc(d.trx)}</span></div>
         <div class="grid grid-cols-2 gap-1.5 mt-2">
-          <button data-approve-dep="${d.id}" data-uid="${d.uid}" data-amount="${d.amount}" class="btn btn-n !py-1 !px-2 text-[11px] font-bold">অনুমোদন (Approve)</button>
-          <button data-decline-dep="${d.id}" class="btn bg-red-500/20 text-red-300 hover:bg-red-500/30 !py-1 !px-2 text-[11px] font-bold">বাতিল (Decline)</button>
+          <button data-approve-dep="${d.id}" class="btn btn-n !py-1 !px-2 text-[11px] font-bold">অনুমোদন</button>
+          <button data-decline-dep="${d.id}" class="btn bg-red-500/20 text-red-300 hover:bg-red-500/30 !py-1 !px-2 text-[11px] font-bold">বাতিল</button>
         </div>
       </div>
     `).join('') || '<div class="text-slate-400">কোনো পেন্ডিং ডিপোজিট নেই।</div>';
@@ -543,8 +570,8 @@ function adminView(){
         <div>নম্বর: <span class="text-volt font-bold">${esc(w.phone)}</span></div>
         <div>পরিমাণ: <span class="text-gold font-bold">৳${w.amount}</span></div>
         <div class="grid grid-cols-2 gap-1.5 mt-2">
-          <button data-approve-with="${w.id}" data-uid="${w.uid}" data-amount="${w.amount}" class="btn btn-p !py-1 !px-2 text-[11px] font-bold">পেইড (Paid)</button>
-          <button data-decline-with="${w.id}" class="btn bg-red-500/20 text-red-300 hover:bg-red-500/30 !py-1 !px-2 text-[11px] font-bold">বাতিল (Decline)</button>
+          <button data-approve-with="${w.id}" class="btn btn-p !py-1 !px-2 text-[11px] font-bold">পেইড</button>
+          <button data-decline-with="${w.id}" class="btn bg-red-500/20 text-red-300 hover:bg-red-500/30 !py-1 !px-2 text-[11px] font-bold">বাতিল</button>
         </div>
       </div>
     `).join('') || '<div class="text-slate-400">কোনো পেন্ডিং উইথড্র নেই।</div>';
@@ -554,17 +581,22 @@ function adminView(){
   $('#mkTourney').onsubmit=async e=>{
     e.preventDefault();
     const fd=new FormData(e.target);
+    const fee = +fd.get('fee'), max = +fd.get('max'), wp = +fd.get('winnerPrize'), rp = +fd.get('runnerUpPrize');
+    if((wp + rp) > (fee * max)){
+      if(!confirm('প্রাইজ মোট ফি-র চেয়ে বেশি। চালিয়ে যাবেন?')) return;
+    }
     try {
       await F.addDoc(F.collection(db,'tournaments'),{
         name: fd.get('name'),
-        fee: +fd.get('fee'),
-        winnerPrize: +fd.get('winnerPrize'),
-        runnerUpPrize: +fd.get('runnerUpPrize'),
-        max: +fd.get('max'),
+        fee,
+        winnerPrize: wp,
+        runnerUpPrize: rp,
+        max,
         type: fd.get('type'),
         start: fd.get('start'),
         status: 'open',
         players: [],
+        uids: [], // Point 4: uids array added for security rules validation
         createdAt: F.serverTimestamp()
       });
       toast('টুর্নামেন্ট সফলভাবে তৈরি হয়েছে!');
@@ -573,59 +605,50 @@ function adminView(){
   };
 }
 
-// Admin Action Listeners for Approve & Decline
+// Point 6: Secure Transaction-based Deposit and Withdraw Approvals
 document.addEventListener('click', async e=>{
-  // Deposit Approve
   const depBtn = e.target.closest('[data-approve-dep]');
   if(depBtn){
-    const id = depBtn.dataset.approveDep, uid = depBtn.dataset.uid, amount = +depBtn.dataset.amount;
-    try {
-      await F.setDoc(F.doc(db, 'deposits', id), { status: 'accepted' }, { merge: true });
-      const uRef = F.doc(db, 'users', uid);
-      const uDoc = await F.getDoc(uRef);
-      const curBal = uDoc.exists() ? (uDoc.data().balance || 0) : 0;
-      await F.setDoc(uRef, { balance: curBal + amount }, { merge: true });
-      toast('ডিপোজিট সফলভাবে অনুমোদন করা হয়েছে!');
-      adminView();
-    } catch(err){toast(err.message,'err')}
+    try{
+      await F.runTransaction(db,async tx=>{
+        const dRef=F.doc(db,'deposits',depBtn.dataset.approveDep),d=await tx.get(dRef);
+        if(!d.exists()||d.data().status!=='pending')throw Error('আগেই প্রসেস হয়েছে');
+        const uRef=F.doc(db,'users',d.data().uid),u=await tx.get(uRef);
+        tx.set(uRef,{balance:(u.exists()?(u.data().balance||0):0)+d.data().amount},{merge:true});
+        tx.update(dRef,{status:'accepted'});
+      });
+      toast('ডিপোজিট অনুমোদন করা হয়েছে!');adminView();
+    }catch(err){toast(err.message,'err')}
   }
 
-  // Deposit Decline
   const depDec = e.target.closest('[data-decline-dep]');
   if(depDec){
-    const id = depDec.dataset.declineDep;
-    try {
-      await F.setDoc(F.doc(db, 'deposits', id), { status: 'rejected' }, { merge: true });
-      toast('ডিপোজিট অনুরোধ বাতিল করা হয়েছে।');
-      adminView();
-    } catch(err){toast(err.message,'err')}
+    try{
+      await F.setDoc(F.doc(db,'deposits',depDec.dataset.declineDep),{status:'rejected'},{merge:true});
+      toast('ডিপোজিট অনুরোধ বাতিল করা হয়েছে।');adminView();
+    }catch(err){toast(err.message,'err')}
   }
 
-  // Withdraw Approve (Paid)
   const withBtn = e.target.closest('[data-approve-with]');
   if(withBtn){
-    const id = withBtn.dataset.approveWith, uid = withBtn.dataset.uid, amount = +withBtn.dataset.amount;
-    try {
-      await F.setDoc(F.doc(db, 'withdraws', id), { status: 'accepted' }, { merge: true });
-      const uRef = F.doc(db, 'users', uid);
-      const uDoc = await F.getDoc(uRef);
-      const curWinBal = uDoc.exists() ? (uDoc.data().winBalance || 0) : 0;
-      if(curWinBal >= amount){
-        await F.setDoc(uRef, { winBalance: curWinBal - amount }, { merge: true });
-      }
-      toast('উইথড্র সফলভাবে পেইড করা হয়েছে!');
-      adminView();
-    } catch(err){toast(err.message,'err')}
+    try{
+      await F.runTransaction(db,async tx=>{
+        const wRef=F.doc(db,'withdraws',withBtn.dataset.approveWith),w=await tx.get(wRef);
+        if(!w.exists()||w.data().status!=='pending')throw Error('আগেই প্রসেস হয়েছে');
+        const uRef=F.doc(db,'users',w.data().uid),u=await tx.get(uRef),bal=u.exists()?(u.data().winBalance||0):0;
+        if(bal<w.data().amount)throw Error('ইউজারের উইনিং ব্যালেন্স কম, বাতিল করুন');
+        tx.update(uRef,{winBalance:bal-w.data().amount});
+        tx.update(wRef,{status:'accepted'});
+      });
+      toast('উইথড্র পেইড করা হয়েছে!');adminView();
+    }catch(err){toast(err.message,'err')}
   }
 
-  // Withdraw Decline
   const withDec = e.target.closest('[data-decline-with]');
   if(withDec){
-    const id = withDec.dataset.declineWith;
-    try {
-      await F.setDoc(F.doc(db, 'withdraws', id), { status: 'rejected' }, { merge: true });
-      toast('উইথড্র অনুরোধ বাতিল করা হয়েছে।');
-      adminView();
-    } catch(err){toast(err.message,'err')}
+    try{
+      await F.setDoc(F.doc(db,'withdraws',withDec.dataset.declineWith),{status:'rejected'},{merge:true});
+      toast('উইথড্র অনুরোধ বাতিল করা হয়েছে।');adminView();
+    }catch(err){toast(err.message,'err')}
   }
 });

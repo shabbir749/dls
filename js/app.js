@@ -125,7 +125,6 @@ function drawFeed(){
 
     <div id="fl" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
-    <!-- Rules & Guide Section -->
     <div class="glass rounded-3xl p-6 space-y-3 border border-white/10">
       <h2 class="font-bold text-slate-100 text-sm md:text-base flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5 text-volt"></i>টুর্নামেন্টে যোগ দেওয়ার সহজ ৩টি ধাপ</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300 pt-2">
@@ -144,9 +143,8 @@ function drawFeed(){
       </div>
     </div>
 
-    <!-- FAQ Accordion Box -->
     <div class="glass rounded-3xl p-6 space-y-4 border border-white/10">
-      সবার মনে আসতে পারে এমন কিছু সাধারণ প্রশ্ন (FAQ)
+      <h2 class="font-bold text-slate-100 text-sm md:text-base flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5 text-volt"></i>সাধারণ জিজ্ঞাসা (FAQ)</h2>
       <div class="space-y-2.5">
         <details class="group bg-slate-900/80 border border-white/10 rounded-2xl p-4 transition">
           <summary class="cursor-pointer font-bold text-xs md:text-sm text-slate-200 flex justify-between items-center select-none">

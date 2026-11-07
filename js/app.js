@@ -633,28 +633,6 @@ actions.join=async()=>{
   }catch(e){toast('জয়েন করা যায়নি: '+e.message,'err')}
 };
 
-function walletView(){
-  if(!needAuth())return;
-  const bal = profile?.balance || 0, winBal = profile?.winBalance || 0;
-  setView(`<div class="space-y-5 py-4 max-w-2xl mx-auto pb-24 px-3 md:px-0">
-    <div class="glass rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-gold/30 shadow-2xl">
-      <div class="text-xs text-slate-400 font-medium">আমার ওয়ালেট একাউন্ট</div>
-      <div class="grid grid-cols-2 gap-4 mt-4">
-        <div class="bg-slate-900/90 p-4 rounded-2xl border border-white/5"><div class="text-xs text-slate-400">মেইন ব্যালেন্স</div><div class="text-2xl font-black text-volt mt-1">৳${bal}</div></div>
-        <div class="bg-slate-900/90 p-4 rounded-2xl border border-white/5"><div class="text-xs text-slate-400">উইনিং ব্যালেন্স</div><div class="text-2xl font-black text-gold mt-1">৳${winBal}</div></div>
-      </div>
-    </div>
-    <div class="glass rounded-3xl p-6 space-y-4 text-center border border-white/10">
-      <p class="text-xs text-slate-300">টাকা এড করতে বা আপনার উইনিং ব্যালেন্স তুলতে নিচের বাটন ব্যবহার করুন</p>
-      <div class="grid grid-cols-2 gap-4">
-        <button data-act="addMoneyModal" class="btn btn-n py-3 text-xs font-bold">এড মানি</button>
-        <button data-act="withdrawModal" class="btn btn-p py-3 text-xs font-bold">উইথড্র</button>
-      </div>
-    </div>
-  </div>`);
-  icons();
-}
-
 function historyView(){
   if(!needAuth())return;
   const list = S.list.filter(t => (t.uids || []).includes(user.uid));
@@ -891,7 +869,7 @@ document.addEventListener('click', async e=>{
         tx.update(wRef,{status:'accepted'});
       });
       toast('উইথড্র পেইড করা হয়েছে!');adminView();
-    }catch(err){toast(err.message,'err')}
+    }catch(err){toast(err.message,-'err')}
   }
 
   const withDec = e.target.closest('[data-decline-with]');

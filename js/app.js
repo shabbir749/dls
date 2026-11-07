@@ -25,27 +25,28 @@ F.onAuthStateChanged(auth,async u=>{
   header();nav();route();
 });
 
-// Fixed Header: Duplicate DLS Hub logo removed, menu aligned nicely on left
+// Fixed Header: Navigation menu centered on desktop using a 3-column grid layout
 function header(){
   const bal = profile?.balance || 0;
   const defaultAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Crect width='30' height='30' fill='%23334155'/%3E%3Ctext x='50%25' y='50%25' fill='%23fff' font-size='12' text-anchor='middle' dy='.3em'%3EU%3C/text%3E%3C/svg%3E";
   
   const hdrEl = $('#hdr');
   if(!hdrEl) return;
-  hdrEl.innerHTML=`<div class="max-w-5xl mx-auto flex items-center justify-between px-4 py-2 bg-slate-900/90 backdrop-blur border-b border-white/10 sticky top-0 z-40">
+  hdrEl.innerHTML=`<div class="max-w-5xl mx-auto grid grid-cols-3 items-center px-4 py-2 bg-slate-900/90 backdrop-blur border-b border-white/10 sticky top-0 z-40">
     
-    <!-- Left: Desktop Navigation Links (Logo is handled in index.html) -->
-    <div class="flex items-center gap-6">
-      <div class="hidden md:flex items-center gap-5 text-xs font-semibold text-slate-300">
-        <a href="#/" class="hover:text-volt transition">হোম</a>
-        <a href="#/history" class="hover:text-volt transition">হিস্টরি</a>
-        <a href="#/wallet" class="hover:text-volt transition">ওয়ালেট</a>
-        <a href="#/me" class="hover:text-volt transition">প্রোফাইল</a>
-      </div>
+    <!-- Left: Empty space for balance alignment -->
+    <div></div>
+
+    <!-- Center: Desktop Navigation Links -->
+    <div class="hidden md:flex items-center justify-center gap-6 text-xs font-semibold text-slate-300">
+      <a href="#/" class="hover:text-volt transition">হোম</a>
+      <a href="#/history" class="hover:text-volt transition">হিস্টরি</a>
+      <a href="#/wallet" class="hover:text-volt transition">ওয়ালেট</a>
+      <a href="#/me" class="hover:text-volt transition">প্রোফাইল</a>
     </div>
 
     <!-- Right: Balance & User Profile -->
-    <div class="flex items-center gap-2 ml-auto">
+    <div class="flex items-center justify-end gap-2 col-span-2 md:col-span-1">
       <a href="#/wallet" class="glass px-3 py-1 rounded-full text-xs font-bold text-gold border border-gold/40 hover:border-gold transition flex items-center gap-1">
         <i data-lucide="wallet" class="h-3.5 w-3.5"></i>৳${bal}
       </a>

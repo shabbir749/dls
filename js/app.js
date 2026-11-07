@@ -16,6 +16,8 @@ const setView=h=>{app.innerHTML=h;icons()};
 const needAuth=()=>{if(user)return true;authModal();return false};
 const listen=draw=>{unsub=F.onSnapshot(F.query(F.collection(db,'tournaments'),F.orderBy('createdAt','desc')),s=>{S.list=s.docs.map(d=>({id:d.id,...d.data()}));draw()},e=>toast(e.message,'err'))};
 
+const safeUrl=u=>{try{const x=new URL(u);return x.protocol==='https:'?x.href:''}catch(e){return ''}};
+
 F.onAuthStateChanged(auth,async u=>{
   user=u;profile=null;
   if(u){try{const s=await F.getDoc(F.doc(db,'users',u.uid));profile=s.exists()?s.data():null}catch(e){}}
@@ -122,6 +124,67 @@ function drawFeed(){
     </div>
 
     <div id="fl" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+    <!-- Rules & Guide Section -->
+    <div class="glass rounded-3xl p-6 space-y-3 border border-white/10">
+      <h2 class="font-bold text-slate-100 text-sm md:text-base flex items-center gap-2"><i data-lucide="help-circle" class="h-5 w-5 text-volt"></i>টুর্নামেন্টে যোগ দেওয়ার সহজ ৩টি ধাপ</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300 pt-2">
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5 space-y-1">
+          <div class="font-black text-volt text-sm">১. এড মানি করুন</div>
+          <p>ওয়ালেট অপশন থেকে আপনার বিকাশ বা নগদ পার্সোনাল নম্বরে টাকা পাঠিয়ে ব্যালেন্স রিচার্জ করুন।</p>
+        </div>
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5 space-y-1">
+          <div class="font-black text-gold text-sm">২. টুর্নামেন্ট জয়েন</div>
+          <p>পছন্দের টুর্নামেন্টে জয়েন করুন। স্লট পূর্ণ হলে অ্যাডমিন ব্র্যাকেট বা গ্রুপ স্টেজ চালু করবেন।</p>
+        </div>
+        <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5 space-y-1">
+          <div class="font-black text-neon text-sm">৩. স্ক্রিনশট ও প্রাইজ</div>
+          <p>ম্যাচ শেষে স্ক্রিনশট আপলোড করুন, অ্যাডমিন ভেরিফাই করার পর প্রাইজ মানি ওয়ালেটে যুক্ত হবে!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Accordion Box -->
+    <div class="glass rounded-3xl p-6 space-y-4 border border-white/10">
+      সবার মনে আসতে পারে এমন কিছু সাধারণ প্রশ্ন (FAQ)
+      <div class="space-y-2.5">
+        <details class="group bg-slate-900/80 border border-white/10 rounded-2xl p-4 transition">
+          <summary class="cursor-pointer font-bold text-xs md:text-sm text-slate-200 flex justify-between items-center select-none">
+            ১. ওয়ালেটে টাকা এড হতে কত সময় লাগে?
+          </summary>
+          <p class="text-xs text-slate-400 mt-2.5 pt-2.5 border-t border-white/5 leading-relaxed">
+            সঠিক ট্রানজেকশন আইডি (TrxID) দিয়ে সাবমিট করার সাধারণত ৫ থেকে ১০ মিনিটের মধ্যে অ্যাডমিন ভেরিফাই করে আপনার মেইন ব্যালেন্সে টাকা যুক্ত করে দেন।
+          </p>
+        </details>
+
+        <details class="group bg-slate-900/80 border border-white/10 rounded-2xl p-4 transition">
+          <summary class="cursor-pointer font-bold text-xs md:text-sm text-slate-200 flex justify-between items-center select-none">
+            ২. ম্যাচ ড্র হলে বা ডিসকানেক্ট হলে কী হবে?
+          </summary>
+          <p class="text-xs text-slate-400 mt-2.5 pt-2.5 border-t border-white/5 leading-relaxed">
+            নেটওয়ার্ক সমস্যা বা ডিসকানেক্টের কারণে ম্যাচ অসম্পূর্ণ থাকলে দুই প্লেয়ারের পারস্পরিক সমঝোতায় পুনরায় ম্যাচ খেলতে হবে এবং প্রুফ হিসেবে স্ক্রিনশট দিতে হবে।
+          </p>
+        </details>
+
+        <details class="group bg-slate-900/80 border border-white/10 rounded-2xl p-4 transition">
+          <summary class="cursor-pointer font-bold text-xs md:text-sm text-slate-200 flex justify-between items-center select-none">
+            ৩. উইনিং ব্যালেন্স কীভাবে বিকাশ বা নগদে তুলব?
+          </summary>
+          <p class="text-xs text-slate-400 mt-2.5 pt-2.5 border-t border-white/5 leading-relaxed">
+            ওয়ালেট অপশন থেকে উইথড্র বাটনে ক্লিক করে আপনার বিকাশ বা নগদ পার্সোনাল নম্বর এবং পরিমাণ (ন্যূনতম ১০০ টাকা) দিয়ে রিকোয়েস্ট পাঠাতে হবে। ২৪ ঘণ্টার মধ্যে পেমেন্ট কমপ্লিট করা হয়।
+          </p>
+        </details>
+
+        <details class="group bg-slate-900/80 border border-white/10 rounded-2xl p-4 transition">
+          <summary class="cursor-pointer font-bold text-xs md:text-sm text-slate-200 flex justify-between items-center select-none">
+            ৪. ইন-গেম টিম নাম ভুল দিলে কি পরিবর্তন করা যাবে?
+          </summary>
+          <p class="text-xs text-slate-400 mt-2.5 pt-2.5 border-t border-white/5 leading-relaxed">
+            হ্যাঁ, আপনি প্রোফাইল সেকশনে গিয়ে যেকোনো সময় আপনার DLS ইন-গেম টিম নাম এবং ছবি আপডেট করে নিতে পারবেন। তবে টুর্নামেন্ট শুরু হওয়ার আগেই তা সঠিক করতে হবে।
+          </p>
+        </details>
+      </div>
+    </div>
   </div>`);
 
   document.querySelectorAll('[data-tab]').forEach(btn=>{
@@ -189,6 +252,88 @@ function drawList(){
   }).join('');
   icons();
 }
+
+function walletView(){
+  if(!needAuth())return;
+  const bal = profile?.balance || 0, winBal = profile?.winBalance || 0;
+  setView(`<div class="space-y-5 py-4 max-w-2xl mx-auto pb-24 px-3 md:px-0">
+    <div class="glass rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-gold/30 shadow-2xl">
+      <div class="text-xs text-slate-400 font-medium">আমার ওয়ালেট একাউন্ট</div>
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-white/5"><div class="text-xs text-slate-400">মেইন ব্যালেন্স</div><div class="text-2xl font-black text-volt mt-1">৳${bal}</div></div>
+        <div class="bg-slate-900/90 p-4 rounded-2xl border border-white/5"><div class="text-xs text-slate-400">উইনিং ব্যালেন্স</div><div class="text-2xl font-black text-gold mt-1">৳${winBal}</div></div>
+      </div>
+    </div>
+    <div class="glass rounded-3xl p-6 space-y-4 text-center border border-white/10">
+      <p class="text-xs text-slate-300">টাকা এড করতে বা আপনার উইনিং ব্যালেন্স তুলতে নিচের বাটন ব্যবহার করুন</p>
+      <div class="grid grid-cols-2 gap-4">
+        <button data-act="addMoneyModal" class="btn btn-n py-3 text-xs font-bold">এড মানি</button>
+        <button data-act="withdrawModal" class="btn btn-p py-3 text-xs font-bold">উইথড্র</button>
+      </div>
+    </div>
+  </div>`);
+  icons();
+}
+
+const actions={
+  auth:authModal,
+  addMoneyModal(){
+    const m=modal(`<div class="space-y-4">
+      <h3 class="text-base font-bold text-slate-100 border-b border-white/10 pb-2">টাকা এড করুন</h3>
+      <div class="rounded-2xl bg-slate-900 p-4 border border-volt/40 text-center space-y-2">
+        <div class="text-xs text-slate-400 font-medium">অফিশিয়াল বিকাশ/নগদ পার্সোনাল নম্বর</div>
+        <div class="text-2xl font-black text-volt tracking-wider select-all">01878254585</div>
+        <button type="button" id="copyBtn" class="btn btn-n !py-1 !px-4 text-xs font-bold inline-flex items-center gap-1.5"><i data-lucide="copy" class="h-3.5 w-3.5"></i>নম্বর কপি করুন</button>
+      </div>
+      <div class="rounded-2xl bg-slate-900/80 p-3 space-y-1 text-xs text-slate-300 border border-white/10">
+        <div class="font-bold text-volt">নির্দেশাবলী:</div>
+        <p>১. উপরে দেওয়া নম্বরে Send Money করুন।</p>
+        <p>২. সঠিক টাকা পাঠিয়ে নিচের বক্সে পরিমাণ ও TrxID দিন।</p>
+      </div>
+      <div><label class="lbl text-xs">টাকার পরিমাণ</label><input id="am" class="inp text-sm" type="number" placeholder="যেমন: ১০০" min="10"></div>
+      <div><label class="lbl text-xs">ট্রানজেকশন আইডি (TrxID)</label><input id="tx" class="inp text-sm uppercase" placeholder="যেমন: 8N7X9W2K3L" maxlength="30"></div>
+      <button id="verifyBtn" class="btn btn-n w-full py-3 font-bold">ভেরিফাই ও সাবমিট</button>
+    </div>`);
+
+    m.$('#copyBtn').onclick=()=>{
+      navigator.clipboard.writeText('01878254585');
+      toast('নম্বর সফলভাবে কপি হয়েছে!');
+    };
+
+    m.$('#verifyBtn').onclick=async()=>{
+      const amount=+m.$('#am').value;
+      const trx=m.$('#tx').value.trim().replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+      if(!amount||amount<10||amount>50000||trx.length<5)return toast('সঠিক পরিমাণ (১০–৫০,০০০) ও TrxID দিন','err');
+      try{
+        await F.setDoc(F.doc(db,'deposits',trx),{uid:user.uid,team:profile?.team||'User',amount,trx,status:'pending',createdAt:F.serverTimestamp()});
+        toast('ডিপোজিট অনুরোধ পাঠানো হয়েছে!');m.close();
+      }catch(e){toast(e.code==='permission-denied'?'এই TrxID আগেই জমা হয়েছে বা তথ্য ভুল':e.message,'err')}
+    };
+  },
+  withdrawModal(){
+    const m=modal(`<div class="space-y-4">
+      <h3 class="text-base font-bold text-slate-100 border-b border-white/10 pb-2">টাকা উইথড্র করুন</h3>
+      <div class="rounded-2xl bg-slate-900/80 p-3.5 space-y-1 text-xs text-slate-300 border border-white/10">
+        <div class="font-bold text-volt">উইথড্র নির্দেশাবলী:</div>
+        <p>১. ন্যূনতম উইথড্র ১০০ টাকা।</p>
+        <p>২. ২৪ ঘণ্টার মধ্যে পেমেন্ট কমপ্লিট করা হবে।</p>
+      </div>
+      <div><label class="lbl text-xs">বিকাশ/নগদ নম্বর (Personal)</label><input id="wn" class="inp text-sm" type="tel" placeholder="01XXXXXXXXX"></div>
+      <div><label class="lbl text-xs">পরিমাণ (৳)</label><input id="wa" class="inp text-sm" type="number" placeholder="ন্যূনতম ১০০ টাকা" min="100"></div>
+      <button id="wBtn" class="btn btn-p w-full py-3 font-bold">উইথড্র অনুরোধ পাঠান</button>
+    </div>`);
+    m.$('#wBtn').onclick=async()=>{
+      const amount=+m.$('#wa').value, phone=m.$('#wn').value.trim();
+      if(amount<100||!phone)return toast('ন্যূনতম ১০০ টাকা এবং সঠিক নম্বর দিন','err');
+      if((profile?.winBalance||0)<amount)return toast('পর্যাপ্ত উইনিং ব্যালেন্স নেই!','err');
+      try {
+        await F.addDoc(F.collection(db,'withdraws'),{uid:user.uid, team:profile?.team||'User', amount, phone, status:'pending', createdAt:F.serverTimestamp()});
+        toast('উইথড্র অনুরোধ জমা হয়েছে।'); m.close();
+      } catch(e){toast(e.message,'err')}
+    };
+  }
+};
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a&&actions[a.dataset.act]){e.preventDefault();actions[a.dataset.act]()}});
 
 function renderGroupTables(t){
   if(!t.groups) return '<p class="text-xs text-slate-400">গ্রুপ এখনো তৈরি হয়নি।</p>';
@@ -301,7 +446,6 @@ function drawT(){
   }
 }
 
-// Match View: Player proof submit (Choose File) + Admin Score/Winner Review
 function matchView(tid, r, i){
   unsub=F.onSnapshot(tref(tid),async s=>{
     if(!s.exists())return setView(`<p class="p-8 text-center text-slate-300">ম্যাচ পাওয়া যায়নি</p>`);
@@ -327,7 +471,6 @@ function matchView(tid, r, i){
           </div>
         </div>
 
-        <!-- DLS Room Code Sharing -->
         <div class="rounded-2xl bg-slate-900 p-4 border border-volt/30 space-y-2 text-left text-xs">
           <div class="font-bold text-volt flex items-center justify-between">
             <span>ডিএলএস ফ্রেন্ড কোড / রুম কোড:</span>
@@ -343,7 +486,6 @@ function matchView(tid, r, i){
           ` : ''}
         </div>
 
-        <!-- Proof Submission Section (File Upload for Players) -->
         <div class="rounded-2xl bg-slate-900 p-4 border border-white/10 space-y-2 text-left text-xs">
           <div class="font-bold text-gold">ম্যাচ স্ক্রিনশট প্রুফ (Proof SS):</div>
           <div>স্কোর: <b>${m.sa ?? '-'}</b> : <b>${m.sb ?? '-'}</b></div>
@@ -358,7 +500,6 @@ function matchView(tid, r, i){
           ` : ''}
         </div>
 
-        <!-- Admin Control Section: Input Scores & Confirm Winner -->
         ${isAdmin ? `
           <div class="rounded-2xl bg-slate-950 p-5 border border-volt/40 space-y-3 text-left text-xs">
             <div class="font-bold text-volt">অ্যাডমিন ম্যাচ রিভিউ ও ইনপুট:</div>
@@ -393,7 +534,6 @@ function matchView(tid, r, i){
       };
     }
 
-    // Canvas Compression for Proof Screenshot
     if(isPlayer && $('#submitProofBtn')){
       $('#submitProofBtn').onclick=()=>{
         const file = $('#ssFile').files[0];
@@ -419,7 +559,6 @@ function matchView(tid, r, i){
       };
     }
 
-    // Admin score update + Automatic Standings/Points Math
     if(isAdmin && $('#adminWinBtn')){
       $('#adminWinBtn').onclick=async()=>{
         const winnerUid = $('#winnerSelect').value;
@@ -444,7 +583,6 @@ function matchView(tid, r, i){
             mm.sa = sa; mm.sb = sb; mm.winner = winnerUid; mm.status = 'done';
             advance(t.rounds, +r, +i, w);
             
-            // Auto Update Group Standings Math if Group Stage
             if(t.standings){
               Object.keys(t.standings).forEach(gKey => {
                 t.standings[gKey].forEach(st => {
@@ -541,7 +679,6 @@ function historyView(){
   icons();
 }
 
-// Mandatory Profile Form for DLS Team Name Setup
 function profileView(){
   if(!user){
     setView(`<div class="space-y-6 py-12 max-w-md mx-auto px-4 text-center">
@@ -643,9 +780,59 @@ function adminView(){
         <button class="btn btn-p w-full py-3 text-xs font-bold">টুর্নামেন্ট পাবলিশ করুন</button>
       </form>
     </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="glass rounded-3xl p-5 space-y-3 border border-neon/30">
+        <h2 class="font-bold text-neon text-xs flex items-center gap-1.5"><i data-lucide="wallet" class="h-4 w-4"></i>এড মানি রিকোয়েস্ট</h2>
+        <div id="depList" class="space-y-2 text-xs">লোড হচ্ছে...</div>
+      </div>
+
+      <div class="glass rounded-3xl p-5 space-y-3 border border-gold/30">
+        <h2 class="font-bold text-gold text-xs flex items-center gap-1.5"><i data-lucide="send" class="h-4 w-4"></i>উইথড্র রিকোয়েস্ট</h2>
+        <div id="withList" class="space-y-2 text-xs">লোড হচ্ছে...</div>
+      </div>
+    </div>
   </div>`);
 
   icons();
+
+  F.getDocs(F.collection(db, 'deposits')).then(snap=>{
+    const list = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const pending = list.filter(x=>x.status==='pending');
+    const el = $('#depList');
+    if(!el) return;
+    el.innerHTML = pending.map(d=>`
+      <div class="bg-slate-900 p-3 rounded-2xl border border-white/5 space-y-1.5">
+        <div>টিম: <b>${esc(d.team)}</b></div>
+        <div>পরিমাণ: <span class="text-volt font-bold">৳${d.amount}</span></div>
+        <div>TrxID: <span class="font-mono text-gold">${esc(d.trx)}</span></div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button data-approve-dep="${d.id}" class="btn btn-n !py-1.5 !px-2 text-[11px] font-bold">অনুমোদন</button>
+          <button data-decline-dep="${d.id}" class="btn bg-red-500/20 text-red-300 hover:bg-red-500/30 !py-1.5 !px-2 text-[11px] font-bold">বাতিল</button>
+        </div>
+      </div>
+    `).join('') || '<div class="text-slate-400">কোনো পেন্ডিং ডিপোজিট নেই।</div>';
+    icons();
+  });
+
+  F.getDocs(F.collection(db, 'withdraws')).then(snap=>{
+    const list = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    const pending = list.filter(x=>x.status==='pending');
+    const el = $('#withList');
+    if(!el) return;
+    el.innerHTML = pending.map(w=>`
+      <div class="bg-slate-900 p-3 rounded-2xl border border-white/5 space-y-1.5">
+        <div>টিম: <b>${esc(w.team)}</b></div>
+        <div>নম্বর: <span class="text-volt font-bold">${esc(w.phone)}</span></div>
+        <div>পরিমাণ: <span class="text-gold font-bold">৳${w.amount}</span></div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button data-approve-with="${w.id}" class="btn btn-p !py-1.5 !px-2 text-[11px] font-bold">পেইড</button>
+          <button data-decline-with="${w.id}" class="btn bg-red-500/20 text-red-300 hover:bg-red-500/30 !py-1.5 !px-2 text-[11px] font-bold">বাতিল</button>
+        </div>
+      </div>
+    `).join('') || '<div class="text-slate-400">কোনো পেন্ডিং উইথড্র নেই।</div>';
+    icons();
+  });
 
   $('#mkTourney').onsubmit=async e=>{
     e.preventDefault();
@@ -670,3 +857,50 @@ function adminView(){
     } catch(err){toast(err.message,'err')}
   };
 }
+
+document.addEventListener('click', async e=>{
+  const depBtn = e.target.closest('[data-approve-dep]');
+  if(depBtn){
+    try{
+      await F.runTransaction(db,async tx=>{
+        const dRef=F.doc(db,'deposits',depBtn.dataset.approveDep),d=await tx.get(dRef);
+        if(!d.exists()||d.data().status!=='pending')throw Error('আগেই প্রসেস হয়েছে');
+        const uRef=F.doc(db,'users',d.data().uid),u=await tx.get(uRef);
+        tx.set(uRef,{balance:(u.exists()?(u.data().balance||0):0)+d.data().amount},{merge:true});
+        tx.update(dRef,{status:'accepted'});
+      });
+      toast('ডিপোজিট অনুমোদন করা হয়েছে!');adminView();
+    }catch(err){toast(err.message,'err')}
+  }
+
+  const depDec = e.target.closest('[data-decline-dep]');
+  if(depDec){
+    try{
+      await F.setDoc(F.doc(db,'deposits',depDec.dataset.declineDep),{status:'rejected'},{merge:true});
+      toast('ডিপোজিট অনুরোধ বাতিল করা হয়েছে।');adminView();
+    }catch(err){toast(err.message,'err')}
+  }
+
+  const withBtn = e.target.closest('[data-approve-with]');
+  if(withBtn){
+    try{
+      await F.runTransaction(db,async tx=>{
+        const wRef=F.doc(db,'withdraws',withBtn.dataset.approveWith),w=await tx.get(wRef);
+        if(!w.exists()||w.data().status!=='pending')throw Error('আগেই প্রসেস হয়েছে');
+        const uRef=F.doc(db,'users',w.data().uid),u=await tx.get(uRef),bal=u.exists()?(u.data().winBalance||0):0;
+        if(bal<w.data().amount)throw Error('ইউজারের উইনিং ব্যালেন্স কম, বাতিল করুন');
+        tx.update(uRef,{winBalance:bal-w.data().amount});
+        tx.update(wRef,{status:'accepted'});
+      });
+      toast('উইথড্র পেইড করা হয়েছে!');adminView();
+    }catch(err){toast(err.message,'err')}
+  }
+
+  const withDec = e.target.closest('[data-decline-with]');
+  if(withDec){
+    try{
+      await F.setDoc(F.doc(db,'withdraws',withDec.dataset.declineWith),{status:'rejected'},{merge:true});
+      toast('উইথড্র অনুরোধ বাতিল করা হয়েছে।');adminView();
+    }catch(err){toast(err.message,'err')}
+  }
+});
